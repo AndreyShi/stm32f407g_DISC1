@@ -72,6 +72,7 @@ class Arduino_Serial{
     void print(float dt,int sz);
 };
 extern Arduino_Serial Serial;
+extern uint32_t ulHighFrequencyTimerTicks;
 uint32_t micros(void);
 void delay(int n);
 

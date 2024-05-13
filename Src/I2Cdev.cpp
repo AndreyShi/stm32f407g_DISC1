@@ -340,6 +340,7 @@ uint16_t I2Cdev::writeWords(uint8_t devAddr, uint8_t regAddr, uint8_t length, ui
 
 
 Arduino_Serial Serial;
+uint32_t ulHighFrequencyTimerTicks;
 
 void Arduino_Serial::write(char ch)
 {
@@ -357,15 +358,20 @@ void Arduino_Serial::print(float dt,int sz)
 }
 /*
 for arduino compability
+in uint32_t 4294 sec max.
 */
 uint32_t micros(void)
 {
-    return 0;
+    return ulHighFrequencyTimerTicks;
 }
 /*
 for arduino compability
 */
 void delay(int n)
 {
-    HAL_Delay(n);
+    uint32_t tmp = micros();
+    uint32_t timer = n * 1000;
+
+    while(micros() - tmp <= timer)
+        {__asm("nop");}
 }
