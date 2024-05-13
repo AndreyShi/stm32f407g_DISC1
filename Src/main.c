@@ -21,7 +21,10 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+//compile main.c with g++ compilator! we need safe compatibility with STMCubeMx
+#include "MPU6050.h"
+MPU6050 mpu;
+int __io_putchar(int ch);
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -88,7 +91,9 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
+  setvbuf(stdin, NULL, _IONBF, 0);  
+  setvbuf(stdout, NULL, _IONBF, 0);
+  setvbuf(stderr, NULL, _IONBF, 0);
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -97,7 +102,13 @@ int main(void)
   MX_I2C1_Init();
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
-
+  I2Cdev::init(&hi2c1);
+  mpu.initialize();
+  if(mpu.testConnection() == true)
+      { printf("MPU6050 connection successful\n");}
+  else
+      { printf("MPU6050 connection failed\n");}
+  printf("Initializing DMP...\n");
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -348,7 +359,15 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+    HAL_GPIO_WritePin(GPIOD, blue_Pin, GPIO_PIN_RESET);
+}
+int __io_putchar(int ch)
+{
+  HAL_UART_Transmit(&huart3, (uint8_t *)&ch, 1, 10);
+  return ch;
+}
 /* USER CODE END 4 */
 
 /**

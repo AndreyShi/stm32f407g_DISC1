@@ -337,3 +337,35 @@ uint16_t I2Cdev::writeWords(uint8_t devAddr, uint8_t regAddr, uint8_t length, ui
     HAL_StatusTypeDef status = HAL_I2C_Mem_Write(I2Cdev_hi2c, devAddr << 1, regAddr, I2C_MEMADD_SIZE_8BIT, (uint8_t *)pData, sizeof(uint16_t) * length, 1000);
     return status == HAL_OK;
 }
+
+
+Arduino_Serial Serial;
+
+void Arduino_Serial::write(char ch)
+{
+   printf("%c",ch);
+}
+
+void Arduino_Serial::print(const char* s)
+{
+   printf("%s",s);
+}
+
+void Arduino_Serial::print(float dt,int sz)
+{
+   printf("%.5f",dt);
+}
+/*
+for arduino compability
+*/
+uint32_t micros(void)
+{
+    return 0;
+}
+/*
+for arduino compability
+*/
+void delay(int n)
+{
+    HAL_Delay(n);
+}

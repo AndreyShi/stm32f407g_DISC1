@@ -36,6 +36,7 @@ THE SOFTWARE.
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #ifndef I2CDEVLIB_WIRE_BUFFER_LENGTH
     #if defined(I2C_BUFFER_LENGTH)
@@ -64,8 +65,15 @@ typedef int bool;
 #define true 1
 #define false 0
 
-
-
+class Arduino_Serial{
+    public:
+    void write(char ch);
+    void print(const char* s);
+    void print(float dt,int sz);
+};
+extern Arduino_Serial Serial;
+uint32_t micros(void);
+void delay(int n);
 
 // 1000ms default read timeout (modify with "I2Cdev::readTimeout = [ms];")
 #define I2CDEV_DEFAULT_READ_TIMEOUT     1000
