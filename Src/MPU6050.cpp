@@ -3275,6 +3275,12 @@ void MPU6050_Base::setDMPConfig2(uint8_t config) {
     I2Cdev::writeByte(devAddr, MPU6050_RA_DMP_CFG_2, config, wireObj);
 }
 
+/* Replacement for Arduino map()
+ * @see https://www.arduino.cc/reference/en/language/functions/math/map/
+ */
+long map(long x, long in_min, long in_max, long out_min, long out_max) {
+    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
 
 //***************************************************************************************
 //**********************           Calibration Routines            **********************
