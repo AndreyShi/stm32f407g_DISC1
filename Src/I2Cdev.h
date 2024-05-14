@@ -65,16 +65,22 @@ typedef int bool;
 #define true 1
 #define false 0
 
+#define boolean bool
+
 class Arduino_Serial{
     public:
     void write(char ch);
     void print(const char* s);
+    void println(const char* s = 0);
+    void println(char s);
     void print(float dt,int sz);
-    void print(int16_t t);
+    void print(int t);
+    void print(char t);
 };
 extern Arduino_Serial Serial;
 extern uint32_t ulHighFrequencyTimerTicks;
 uint32_t micros(void);
+void delayMicroseconds(int t);
 void delay(int n);
 
 // 1000ms default read timeout (modify with "I2Cdev::readTimeout = [ms];")

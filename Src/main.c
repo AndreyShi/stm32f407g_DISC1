@@ -23,8 +23,11 @@
 /* USER CODE BEGIN Includes */
 //compile main.c with g++ compilator! we need safe compatibility with STMCubeMx
 #include "MPU6050.h"
+#include "IMU_Zero.h"
 MPU6050 mpu;
+#define accelgyro mpu
 extern "C" int __io_putchar(int ch);
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -108,11 +111,10 @@ int main(void)
   /* USER CODE BEGIN 2 */
   I2Cdev::init(&hi2c1);
   mpu.initialize();
-  if(mpu.testConnection() == true)
-      { printf("MPU6050 connection successful\n");}
-  else
-      { printf("MPU6050 connection failed\n");}
-  printf("Initializing DMP...\n");
+    // verify connection
+    Serial.println("Testing device connections...");
+    Serial.println(accelgyro.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
+   calibraton();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -433,6 +435,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
    if(htim->Instance == TIM7)
        { ulHighFrequencyTimerTicks++;}
 }
+
 /* USER CODE END 4 */
 
 /**

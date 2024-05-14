@@ -352,13 +352,30 @@ void Arduino_Serial::print(const char* s)
    printf("%s",s);
 }
 
+void Arduino_Serial::println(const char* s)
+{
+    if(s == 0)
+    {printf("\n",s);}
+    else
+    {printf("%s\n",s);}
+}
+
+void Arduino_Serial::println(char s)
+{
+     printf("%c\n",s);
+}
+
 void Arduino_Serial::print(float dt,int sz)
 {
    printf("%.5f",dt);
 }
-void Arduino_Serial::print(int16_t t)
+void Arduino_Serial::print(int t)
 {
     printf("%d",t);
+}
+void Arduino_Serial::print(char t)
+{
+    printf("%c",t);
 }
 /*
 for arduino compability
@@ -368,6 +385,13 @@ uint32_t micros(void)
 {
     extern TIM_HandleTypeDef htim7;
     return __HAL_TIM_GET_COUNTER(&htim7);//ulHighFrequencyTimerTicks;
+}
+
+void delayMicroseconds(int t)
+{
+    uint32_t tmp = micros();
+    while(micros() - tmp <= (uint32_t)t)
+        {;}
 }
 /*
 for arduino compability
