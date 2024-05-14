@@ -114,7 +114,15 @@ int main(void)
     // verify connection
     Serial.println("Testing device connections...");
     Serial.println(accelgyro.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
-   calibraton();
+  //mpu.setXGyroOffset(51);
+  //mpu.setYGyroOffset(8);
+  //mpu.setZGyroOffset(21);
+  //mpu.setXAccelOffset(0);
+  //mpu.setYAccelOffset(0);
+  //mpu.setZAccelOffset(0);
+  // calibraton();
+   mpu.PrintActiveOffsets();
+   //printf("%d %d %d\n",mpu.getXAccelOffset(),mpu.getYAccelOffset(),mpu.getZAccelOffset());  
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -133,7 +141,7 @@ int16_t gx, gy, gz;
         // display tab-separated accel/gyro x/y/z values
         printf("%d %d %d %d %d %d\n",ax, ay, az,gx, gy, gz);
 
-
+//printf("offsets: %d %d %d\n",mpu.getXAccelOffset(),mpu.getYAccelOffset(),mpu.getZAccelOffset()); 
     // blink LED to indicate activity
     delay(100);
     /* USER CODE END WHILE */

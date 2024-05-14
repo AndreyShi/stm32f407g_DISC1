@@ -355,7 +355,7 @@ void Arduino_Serial::print(const char* s)
 void Arduino_Serial::println(const char* s)
 {
     if(s == 0)
-    {printf("\n",s);}
+    {printf("\n");}
     else
     {printf("%s\n",s);}
 }
