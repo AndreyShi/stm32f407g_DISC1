@@ -70,6 +70,7 @@ class Arduino_Serial{
     void write(char ch);
     void print(const char* s);
     void print(float dt,int sz);
+    void print(int16_t t);
 };
 extern Arduino_Serial Serial;
 extern uint32_t ulHighFrequencyTimerTicks;

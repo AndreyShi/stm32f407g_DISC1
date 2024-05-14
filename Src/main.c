@@ -24,7 +24,7 @@
 //compile main.c with g++ compilator! we need safe compatibility with STMCubeMx
 #include "MPU6050.h"
 MPU6050 mpu;
-int __io_putchar(int ch);
+extern "C" int __io_putchar(int ch);
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -119,6 +119,21 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    int16_t ax, ay, az;
+int16_t gx, gy, gz;
+        // read raw accel/gyro measurements from device
+    mpu.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+
+    // these methods (and a few others) are also available
+    //accelgyro.getAcceleration(&ax, &ay, &az);
+    //accelgyro.getRotation(&gx, &gy, &gz);
+
+        // display tab-separated accel/gyro x/y/z values
+        printf("%d %d %d %d %d %d\n",ax, ay, az,gx, gy, gz);
+
+
+    // blink LED to indicate activity
+    delay(100);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -306,9 +321,9 @@ static void MX_TIM7_Init(void)
 
   /* USER CODE END TIM7_Init 1 */
   htim7.Instance = TIM7;
-  htim7.Init.Prescaler = 84;
+  htim7.Init.Prescaler = 83;
   htim7.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim7.Init.Period = 1;
+  htim7.Init.Period = 65535;
   htim7.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim7) != HAL_OK)
   {
@@ -321,7 +336,8 @@ static void MX_TIM7_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN TIM7_Init 2 */
-   HAL_TIM_Base_Start_IT(&htim7);
+   HAL_TIM_Base_Start(&htim7);
+   __HAL_TIM_CLEAR_FLAG(&htim7, TIM_FLAG_UPDATE);
   /* USER CODE END TIM7_Init 2 */
 
 }

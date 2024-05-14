@@ -356,19 +356,26 @@ void Arduino_Serial::print(float dt,int sz)
 {
    printf("%.5f",dt);
 }
+void Arduino_Serial::print(int16_t t)
+{
+    printf("%d",t);
+}
 /*
 for arduino compability
 in uint32_t 4294 sec max.
 */
 uint32_t micros(void)
 {
-    return ulHighFrequencyTimerTicks;
+    extern TIM_HandleTypeDef htim7;
+    return __HAL_TIM_GET_COUNTER(&htim7);//ulHighFrequencyTimerTicks;
 }
 /*
 for arduino compability
 */
 void delay(int n)
 {
+    HAL_Delay(n);
+    return;
     uint32_t tmp = micros();
     uint32_t timer = n * 1000;
 
