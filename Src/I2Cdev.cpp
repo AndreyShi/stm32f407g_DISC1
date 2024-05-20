@@ -362,12 +362,17 @@ void Arduino_Serial::println(const char* s)
 
 void Arduino_Serial::println(char s)
 {
-     printf("%c\n",s);
+    printf("%c\n",s);
 }
 
 void Arduino_Serial::print(float dt,int sz)
 {
-   printf("%.5f",dt);
+    printf("%.5f",dt);
+}
+
+void Arduino_Serial::print(double dt,int sz)
+{
+    printf("%.5f",dt);
 }
 void Arduino_Serial::print(int t)
 {

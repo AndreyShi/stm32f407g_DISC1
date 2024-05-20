@@ -69,7 +69,8 @@
         "defineList": [
           "DEBUG",
           "USE_HAL_DRIVER",
-          "STM32F407xx"
+          "STM32F407xx",
+          "_USE_MATH_DEFINES"
         ]
       }
     },

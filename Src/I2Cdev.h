@@ -66,6 +66,7 @@ typedef int bool;
 #define false 0
 
 #define boolean bool
+#define F(x) x
 
 class Arduino_Serial{
     public:
@@ -74,6 +75,7 @@ class Arduino_Serial{
     void println(const char* s = 0);
     void println(char s);
     void print(float dt,int sz);
+    void print(double dt,int sz = 0);
     void print(int t);
     void print(char t);
 };

@@ -31,6 +31,7 @@ THE SOFTWARE.
 
 #ifndef _HELPER_3DMATH_H_
 #define _HELPER_3DMATH_H_
+#define _USE_MATH_DEFINES
 #include <cmath>
 class Quaternion {
     public:
