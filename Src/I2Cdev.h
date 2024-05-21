@@ -74,6 +74,8 @@ class Arduino_Serial{
     void print(const char* s);
     void println(const char* s = 0);
     void println(char s);
+    void println(float dt,int sz);
+    void println(double dt,int sz);
     void print(float dt,int sz);
     void print(double dt,int sz = 0);
     void print(int t);

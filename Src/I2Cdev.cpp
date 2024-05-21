@@ -370,9 +370,19 @@ void Arduino_Serial::print(float dt,int sz)
     printf("%.5f",dt);
 }
 
+void Arduino_Serial::println(float dt,int sz)
+{
+    printf("%.3f\n",dt);
+}
+
+void Arduino_Serial::println(double dt,int sz)
+{
+    printf("%.3f\n",dt);
+}
+
 void Arduino_Serial::print(double dt,int sz)
 {
-    printf("%.5f",dt);
+    printf("%.3f",dt);
 }
 void Arduino_Serial::print(int t)
 {

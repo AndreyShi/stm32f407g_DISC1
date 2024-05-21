@@ -175,12 +175,14 @@ int main(void)
     // verify connection
     Serial.println("Testing device connections...");
     Serial.println(accelgyro.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
-  //mpu.setXGyroOffset(51);
-  //mpu.setYGyroOffset(8);
-  //mpu.setZGyroOffset(21);
-  //mpu.setXAccelOffset(0);
-  //mpu.setYAccelOffset(0);
-  //mpu.setZAccelOffset(0);
+    mpu.PrintActiveOffsets();
+    //mpu.setXGyroOffset(220);
+    //mpu.setYGyroOffset(76);
+    //mpu.setZGyroOffset(-85);
+    //mpu.setZAccelOffset(1788); // 1688 factory default for my test chip
+    //mpu.CalibrateAccel(3);//old 6
+    //mpu.CalibrateGyro(3);//old 6
+    //mpu.PrintActiveOffsets();
   // calibraton();
  //  mpu.PrintActiveOffsets();
    //printf("%d %d %d\n",mpu.getXAccelOffset(),mpu.getYAccelOffset(),mpu.getZAccelOffset());  
@@ -189,16 +191,16 @@ int main(void)
     devStatus = mpu.dmpInitialize();
 
     // supply your own gyro offsets here, scaled for min sensitivity
-    mpu.setXGyroOffset(220);
-    mpu.setYGyroOffset(76);
-    mpu.setZGyroOffset(-85);
-    mpu.setZAccelOffset(1788); // 1688 factory default for my test chip
+    //mpu.setXGyroOffset(220);
+    //mpu.setYGyroOffset(76);
+    //mpu.setZGyroOffset(-85);
+    //mpu.setZAccelOffset(1788); // 1688 factory default for my test chip
 
     // make sure it worked (returns 0 if so)
     if (devStatus == 0) {
         // Calibration Time: generate offsets and calibrate our MPU6050
-        mpu.CalibrateAccel(6);
-        mpu.CalibrateGyro(6);
+        //mpu.CalibrateAccel(6);//old 6
+        //mpu.CalibrateGyro(6);//old 6
         mpu.PrintActiveOffsets();
         // turn on the DMP, now that it's ready
         Serial.println(F("Enabling DMP..."));
@@ -232,6 +234,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    delay(100);
     if (!dmpReady) {continue;}
 
     if (!mpuInterrupt) {continue;}
@@ -274,7 +277,7 @@ int main(void)
             Serial.print("\t");
             Serial.print(ypr[1] * 180/M_PI);
             Serial.print("\t");
-            Serial.println(ypr[2] * 180/M_PI);
+            Serial.println(ypr[2] * 180/M_PI,1);
         #endif
 
         #ifdef OUTPUT_READABLE_REALACCEL
@@ -607,7 +610,8 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-    HAL_GPIO_WritePin(GPIOD, blue_Pin, GPIO_PIN_RESET);
+    //HAL_GPIO_WritePin(GPIOD, blue_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_TogglePin(GPIOD, blue_Pin);
     dmpDataReady();
 }
 
