@@ -3296,7 +3296,7 @@ void MPU6050_Base::CalibrateGyro(uint8_t Loops ) {
   kP *= x;
   kI *= x;
   
-  PID( 0x43,  kP, kI,  Loops);
+  PID( MPU6050_RA_GYRO_XOUT_H,  kP, kI,  Loops);
 }
 
 /**
@@ -3310,11 +3310,11 @@ void MPU6050_Base::CalibrateAccel(uint8_t Loops ) {
 	x = (100 - map(Loops, 1, 5, 20, 0)) * .01;
 	kP *= x;
 	kI *= x;
-	PID( 0x3B, kP, kI,  Loops);
+	PID( MPU6050_RA_ACCEL_XOUT_H, kP, kI,  Loops);
 }
 
 void MPU6050_Base::PID(uint8_t ReadAddress, float kP,float kI, uint8_t Loops){
-	uint8_t SaveAddress = (ReadAddress == 0x3B)?((getDeviceID() < 0x38 )? 0x06:0x77):0x13;
+	uint8_t SaveAddress = (ReadAddress == MPU6050_RA_ACCEL_XOUT_H)?((getDeviceID() < 0x38 )? MPU6050_RA_XA_OFFS_H:0x77):MPU6050_RA_XG_OFFS_USRH;
 
 	int16_t  Data;
 	float Reading;
@@ -3324,12 +3324,12 @@ void MPU6050_Base::PID(uint8_t ReadAddress, float kP,float kI, uint8_t Loops){
 	int16_t eSample;
 	uint32_t eSum;
 	uint16_t gravity = 8192; // prevent uninitialized compiler warning
-	if (ReadAddress == 0x3B) gravity = 16384 >> getFullScaleAccelRange();
+	if (ReadAddress == MPU6050_RA_ACCEL_XOUT_H) gravity = 16384 >> getFullScaleAccelRange();
 	Serial.write('>');
 	for (int i = 0; i < 3; i++) {
 		I2Cdev::readWords(devAddr, SaveAddress + (i * shift), 1, (uint16_t *)&Data, I2Cdev::readTimeout, wireObj); // reads 1 or more 16 bit integers (Word)
 		Reading = Data;
-		if(SaveAddress != 0x13){
+		if(SaveAddress != MPU6050_RA_XG_OFFS_USRH){
 			BitZero[i] = Data & 1;										 // Capture Bit Zero to properly handle Accelerometer calibration
 			ITerm[i] = ((float)Reading) * 8;
 			} else {
@@ -3340,33 +3340,39 @@ void MPU6050_Base::PID(uint8_t ReadAddress, float kP,float kI, uint8_t Loops){
 		eSample = 0;
 		for (int c = 0; c < 100; c++) {// 100 PI Calculations
 			eSum = 0;
-			for (int i = 0; i < 3; i++) {
+			for (int i = 0; i < 3; i++) { // X Y Z
 				I2Cdev::readWords(devAddr, ReadAddress + (i * 2), 1, (uint16_t *)&Data, I2Cdev::readTimeout, wireObj); // reads 1 or more 16 bit integers (Word)
 				Reading = Data;
-				if ((ReadAddress == 0x3B)&&(i == 2)) Reading -= gravity;	//remove Gravity
+				if ((ReadAddress == MPU6050_RA_ACCEL_XOUT_H)&&(i == 2)) Reading -= gravity;	//remove Gravity
 				Error = -Reading;
 				eSum += abs(Reading);
 				PTerm = kP * Error;
 				ITerm[i] += (Error * 0.001) * kI;				// Integral term 1000 Calculations a second = 0.001
-				if(SaveAddress != 0x13){
+				if(SaveAddress != MPU6050_RA_XG_OFFS_USRH){
 					Data = round((PTerm + ITerm[i] ) / 8);		//Compute PID Output
 					Data = ((Data)&0xFFFE) |BitZero[i];			// Insert Bit0 Saved at beginning
 				} else Data = round((PTerm + ITerm[i] ) / 4);	//Compute PID Output
 				I2Cdev::writeWords(devAddr, SaveAddress + (i * shift), 1, (uint16_t *)&Data, wireObj);
 			}
+            uint32_t tmp = micros();
 			if((c == 99) && eSum > 1000){						// Error is still to great to continue 
 				c = 0;
-				Serial.write('*');
+				//Serial.write('*');
+                printf("* %ld\n",eSum); // посмотреть как меняется eSum
+                //kP *= 1.05; // попробовать увеличить 
+                //kI *= 1.05;
 			}
-			if((eSum * ((ReadAddress == 0x3B)?.05: 1)) < 5) eSample++;	// Successfully found offsets prepare to  advance
+			if((eSum * ((ReadAddress == MPU6050_RA_ACCEL_XOUT_H)?.05: 1)) < 5) eSample++;	// Successfully found offsets prepare to  advance
 			if((eSum < 100) && (c > 10) && (eSample >= 10)) break;		// Advance to next Loop
-			delay(1);
+			//delayMicroseconds(1000);//delay(1);
+            while(micros() - tmp <= (uint32_t)1000)
+                 {;}
 		}
 		Serial.write('.');
 		kP *= .75;
 		kI *= .75;
 		for (int i = 0; i < 3; i++){
-			if(SaveAddress != 0x13) {
+			if(SaveAddress != MPU6050_RA_XG_OFFS_USRH) {
 				Data = round((ITerm[i] ) / 8);		//Compute PID Output
 				Data = ((Data)&0xFFFE) |BitZero[i];	// Insert Bit0 Saved at beginning
 			} else Data = round((ITerm[i]) / 4);
