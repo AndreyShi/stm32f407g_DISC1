@@ -22,7 +22,9 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 //compile main.c with g++ compilator! we need safe compatibility with STMCubeMx
+//#include "MPU6050_6Axis_MotionApps612.h"
 #include "MPU6050_6Axis_MotionApps20.h"
+//#include "MPU6050_9Axis_MotionApps41.h"
 #include "IMU_Zero.h"
 MPU6050 mpu;
 #define accelgyro mpu
@@ -169,37 +171,50 @@ int main(void)
   MX_I2C1_Init();
   MX_USART3_UART_Init();
   MX_TIM7_Init();
+
   /* USER CODE BEGIN 2 */
   I2Cdev::init(&hi2c1);
   mpu.initialize();
     // verify connection
     Serial.println("Testing device connections...");
     Serial.println(accelgyro.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
-    mpu.PrintActiveOffsets();
-    //mpu.setXGyroOffset(220);
-    //mpu.setYGyroOffset(76);
-    //mpu.setZGyroOffset(-85);
-    //mpu.setZAccelOffset(1788); // 1688 factory default for my test chip
+
+
+    Serial.println(F("Initializing DMP..."));
+    devStatus = mpu.dmpInitialize();
+    mpu.setXAccelOffset(-13321); 
+    mpu.setYAccelOffset(-26372); 
+    mpu.setZAccelOffset(1536); 
+    //mpu.setXGyroOffset(0);
+    //mpu.setYGyroOffset(0);
+    //mpu.setZGyroOffset(0);
+     mpu.setXGyroOffset(51);
+     mpu.setYGyroOffset(8);
+     mpu.setZGyroOffset(21);
+     mpu.setXAccelOffset(1150);
+     //mpu.setYAccelOffset(-50);
+     //mpu.setZAccelOffset(1060);
+  HAL_Delay(5000);
     //mpu.CalibrateAccel(3);//old 6
     //mpu.CalibrateGyro(3);//old 6
     //mpu.PrintActiveOffsets();
   // calibraton();
- //  mpu.PrintActiveOffsets();
+   mpu.PrintActiveOffsets();
+   int16_t ax, ay, az;
+   int16_t gx, gy, gz;
+   int16_t offset = 0;
    //printf("%d %d %d\n",mpu.getXAccelOffset(),mpu.getYAccelOffset(),mpu.getZAccelOffset());  
        // load and configure the DMP
-    Serial.println(F("Initializing DMP..."));
-    devStatus = mpu.dmpInitialize();
-
-    // supply your own gyro offsets here, scaled for min sensitivity
-    //mpu.setXGyroOffset(220);
-    //mpu.setYGyroOffset(76);
-    //mpu.setZGyroOffset(-85);
-    //mpu.setZAccelOffset(1788); // 1688 factory default for my test chip
-
+   //while(1)
+   //{
+   //  accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+   //  printf("%d %d %d %d %d %d\n",ax, ay, az, gx, gy, gz);
+   //  delay(100);
+   //}
     // make sure it worked (returns 0 if so)
     if (devStatus == 0) {
         // Calibration Time: generate offsets and calibrate our MPU6050
-        //mpu.CalibrateAccel(6);//old 6
+        mpu.CalibrateAccel(6);//old 6
         //mpu.CalibrateGyro(6);//old 6
         mpu.PrintActiveOffsets();
         // turn on the DMP, now that it's ready
@@ -241,7 +256,9 @@ int main(void)
 
     mpuInterrupt = false;
     // read a packet from FIFO
-    if (mpu.dmpGetCurrentFIFOPacket(fifoBuffer)) { // Get the Latest packet 
+    if (mpu.dmpGetCurrentFIFOPacket(fifoBuffer)) 
+    //mpu.getFIFOBytes(fifoBuffer, packetSize);
+    { // Get the Latest packet 
            #ifdef OUTPUT_READABLE_QUATERNION
             // display quaternion values in easy matrix form: w x y z
             mpu.dmpGetQuaternion(&q, fifoBuffer);
@@ -252,7 +269,8 @@ int main(void)
             Serial.print("\t");
             Serial.print(q.y);
             Serial.print("\t");
-            Serial.println(q.z);
+            Serial.print(q.z);
+            Serial.println();
         #endif
 
         #ifdef OUTPUT_READABLE_EULER
@@ -291,7 +309,8 @@ int main(void)
             Serial.print("\t");
             Serial.print(aaReal.y);
             Serial.print("\t");
-            Serial.println(aaReal.z);
+            Serial.print(aaReal.z);
+            Serial.println();
         #endif
 
         #ifdef OUTPUT_READABLE_WORLDACCEL

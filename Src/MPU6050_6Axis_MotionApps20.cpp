@@ -549,7 +549,7 @@ uint8_t MPU6050_6Axis_MotionApps20::dmpGetYawPitchRoll(float *data, Quaternion *
 }
 #else 
 uint8_t MPU6050_6Axis_MotionApps20::dmpGetYawPitchRoll(float *data, Quaternion *q, VectorFloat *gravity) {
-	#define PI           3.14159265358979323846  /* pi */
+	#define PI           3.14  /* pi */
     // yaw: (about Z axis)
     data[0] = atan2(2*q -> x*q -> y - 2*q -> w*q -> z, 2*q -> w*q -> w + 2*q -> x*q -> x - 1);
     // pitch: (nose up/down, about Y axis)

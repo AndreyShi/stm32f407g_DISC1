@@ -3312,7 +3312,8 @@ void MPU6050_Base::CalibrateAccel(uint8_t Loops ) {
 	kI *= x;
 	PID( MPU6050_RA_ACCEL_XOUT_H, kP, kI,  Loops);
 }
-
+uint16_t  Data_test[3];
+uint16_t  Data_test_bias[3];
 void MPU6050_Base::PID(uint8_t ReadAddress, float kP,float kI, uint8_t Loops){
 	uint8_t SaveAddress = (ReadAddress == MPU6050_RA_ACCEL_XOUT_H)?((getDeviceID() < 0x38 )? MPU6050_RA_XA_OFFS_H:0x77):MPU6050_RA_XG_OFFS_USRH;
 
@@ -3325,6 +3326,7 @@ void MPU6050_Base::PID(uint8_t ReadAddress, float kP,float kI, uint8_t Loops){
 	uint32_t eSum;
 	uint16_t gravity = 8192; // prevent uninitialized compiler warning
 	if (ReadAddress == MPU6050_RA_ACCEL_XOUT_H) gravity = 16384 >> getFullScaleAccelRange();
+    printf("readaddres: %d  saveaddres: %d  gravity: %d \n",ReadAddress, SaveAddress,gravity);
 	Serial.write('>');
 	for (int i = 0; i < 3; i++) {
 		I2Cdev::readWords(devAddr, SaveAddress + (i * shift), 1, (uint16_t *)&Data, I2Cdev::readTimeout, wireObj); // reads 1 or more 16 bit integers (Word)
@@ -3342,6 +3344,7 @@ void MPU6050_Base::PID(uint8_t ReadAddress, float kP,float kI, uint8_t Loops){
 			eSum = 0;
 			for (int i = 0; i < 3; i++) { // X Y Z
 				I2Cdev::readWords(devAddr, ReadAddress + (i * 2), 1, (uint16_t *)&Data, I2Cdev::readTimeout, wireObj); // reads 1 or more 16 bit integers (Word)
+                Data_test[i] = Data;
 				Reading = Data;
 				if ((ReadAddress == MPU6050_RA_ACCEL_XOUT_H)&&(i == 2)) Reading -= gravity;	//remove Gravity
 				Error = -Reading;
@@ -3352,21 +3355,20 @@ void MPU6050_Base::PID(uint8_t ReadAddress, float kP,float kI, uint8_t Loops){
 					Data = round((PTerm + ITerm[i] ) / 8);		//Compute PID Output
 					Data = ((Data)&0xFFFE) |BitZero[i];			// Insert Bit0 Saved at beginning
 				} else Data = round((PTerm + ITerm[i] ) / 4);	//Compute PID Output
+                Data_test_bias[i] = Data;
 				I2Cdev::writeWords(devAddr, SaveAddress + (i * shift), 1, (uint16_t *)&Data, wireObj);
 			}
-            uint32_t tmp = micros();
+
 			if((c == 99) && eSum > 1000){						// Error is still to great to continue 
 				c = 0;
-				//Serial.write('*');
-                printf("* %ld\n",eSum); // посмотреть как меняется eSum
-                //kP *= 1.05; // попробовать увеличить 
-                //kI *= 1.05;
+				Serial.write('*');
+                //printf("* %ld ",eSum); // посмотреть как меняется eSum
+                //kP *= 1.25; // попробовать увеличить 
+                //kI *= 1.25;
 			}
 			if((eSum * ((ReadAddress == MPU6050_RA_ACCEL_XOUT_H)?.05: 1)) < 5) eSample++;	// Successfully found offsets prepare to  advance
 			if((eSum < 100) && (c > 10) && (eSample >= 10)) break;		// Advance to next Loop
-			//delayMicroseconds(1000);//delay(1);
-            while(micros() - tmp <= (uint32_t)1000)
-                 {;}
+			delay(1);
 		}
 		Serial.write('.');
 		kP *= .75;

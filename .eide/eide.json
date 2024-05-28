@@ -21,7 +21,10 @@
   },
   "targets": {
     "Debug": {
-      "excludeList": [],
+      "excludeList": [
+        "Src/MPU6050_6Axis_MotionApps612.cpp",
+        "Src/MPU6050_9Axis_MotionApps41.cpp"
+      ],
       "toolchain": "GCC",
       "compileConfig": {
         "cpuType": "Cortex-M3",
@@ -86,8 +89,7 @@
         "defineList": [
           "DEBUG",
           "USE_HAL_DRIVER",
-          "STM32F407xx",
-          "_USE_MATH_DEFINES"
+          "STM32F407xx"
         ]
       }
     },
