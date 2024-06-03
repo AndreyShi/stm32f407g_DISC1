@@ -94,14 +94,14 @@ class I2Cdev{
 static uint16_t readTimeout;
 static void init(I2C_HandleTypeDef * hi2c);
 
-static uint8_t readBit(uint8_t devAddr, uint8_t regAddr, uint8_t bitNum, uint8_t *data, uint16_t timeout,void* wireObj = 0);
-static uint8_t readBitW(uint8_t devAddr, uint8_t regAddr, uint8_t bitNum, uint16_t *data, uint16_t timeout,void* wireObj = 0);
-static uint8_t readBits(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t length, uint8_t *data, uint16_t timeout,void* wireObj = 0);
-static uint8_t readBitsW(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t length, uint16_t *data, uint16_t timeout,void* wireObj = 0);
-static uint8_t readByte(uint8_t devAddr, uint8_t regAddr, uint8_t *data, uint16_t timeout,void* wireObj = 0);
-static uint8_t readWord(uint8_t devAddr, uint8_t regAddr, uint16_t *data, uint16_t timeout,void* wireObj = 0);
-static uint8_t readBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8_t *data, uint16_t timeout,void* wireObj = 0);
-static uint8_t readWords(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint16_t *data, uint16_t timeout,void* wireObj = 0);
+static uint8_t readBit(uint8_t devAddr, uint8_t regAddr, uint8_t bitNum, uint8_t *data, uint16_t timeout = I2CDEV_DEFAULT_READ_TIMEOUT,void* wireObj = 0);
+static uint8_t readBitW(uint8_t devAddr, uint8_t regAddr, uint8_t bitNum, uint16_t *data, uint16_t timeout = I2CDEV_DEFAULT_READ_TIMEOUT,void* wireObj = 0);
+static uint8_t readBits(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t length, uint8_t *data, uint16_t timeout = I2CDEV_DEFAULT_READ_TIMEOUT,void* wireObj = 0);
+static uint8_t readBitsW(uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t length, uint16_t *data, uint16_t timeout = I2CDEV_DEFAULT_READ_TIMEOUT,void* wireObj = 0);
+static uint8_t readByte(uint8_t devAddr, uint8_t regAddr, uint8_t *data, uint16_t timeout = I2CDEV_DEFAULT_READ_TIMEOUT,void* wireObj = 0);
+static uint8_t readWord(uint8_t devAddr, uint8_t regAddr, uint16_t *data, uint16_t timeout = I2CDEV_DEFAULT_READ_TIMEOUT,void* wireObj = 0);
+static uint8_t readBytes(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8_t *data, uint16_t timeout = I2CDEV_DEFAULT_READ_TIMEOUT,void* wireObj = 0);
+static uint8_t readWords(uint8_t devAddr, uint8_t regAddr, uint8_t length, uint16_t *data, uint16_t timeout = I2CDEV_DEFAULT_READ_TIMEOUT,void* wireObj = 0);
 
 static uint16_t writeBit(uint8_t devAddr, uint8_t regAddr, uint8_t bitNum, uint8_t data,void* wireObj = 0);
 static uint16_t writeBitW(uint8_t devAddr, uint8_t regAddr, uint8_t bitNum, uint16_t data,void* wireObj = 0);

@@ -26,10 +26,15 @@
 #include "MPU6050_6Axis_MotionApps20.h"
 //#include "MPU6050_9Axis_MotionApps41.h"
 #include "IMU_Zero.h"
+#include "HMC5883L.h"
 MPU6050 mpu;
 #define accelgyro mpu
 extern "C" int __io_putchar(int ch);
 #define M_PI           3.14159265358979323846  /* pi */
+// class default I2C address is 0x1E
+// specific I2C addresses may be passed as a parameter here
+// this device only supports one I2C address (0x1E)
+HMC5883L mag;
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -135,6 +140,7 @@ volatile bool mpuInterrupt = false;     // indicates whether MPU interrupt pin h
 void dmpDataReady() {
     mpuInterrupt = true;
 }
+int16_t mx, my, mz;
 /* USER CODE END 0 */
 
 /**
@@ -178,9 +184,19 @@ int main(void)
   // verify connection
   Serial.println("Testing device connections...");
 
+   while(1){
+       bool tst = accelgyro.testConnection();
+       Serial.println(tst ? "MPU6050 connection successful" : "MPU6050 connection failed");
+       if(tst == false)
+           { HAL_Delay(5000);}
+       else
+           { break;}
+   }
+
+  mag.initialize();
   while(1){
-      bool tst = accelgyro.testConnection();
-      Serial.println(tst ? "MPU6050 connection successful" : "MPU6050 connection failed");
+      bool tst = mag.testConnection();
+      Serial.println(tst ? "HMC5883L connection successful" : "HMC5883L connection failed");
       if(tst == false)
           { HAL_Delay(5000);}
       else
@@ -228,7 +244,25 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)   
   {  
+    // read raw heading measurements from device
+    mag.getHeading(&mx, &my, &mz);
+
+    // display tab-separated gyro x/y/z values
+    Serial.print("mag:\t");
+    Serial.print(mx); Serial.print("\t");
+    Serial.print(my); Serial.print("\t");
+    Serial.print(mz); Serial.print("\t");
+    
+// To calculate heading in degrees. 0 degree indicates North
+    float heading = atan2(my, mx);
+    if(heading < 0)
+      heading += 2 * M_PI;
+    Serial.print("heading:\t");
+    Serial.println(heading * 180/M_PI);
+   
     delay(100);
+    continue;
+
     if (!dmpReady) {
       printf("dmp is not ready!\n");
       continue;
