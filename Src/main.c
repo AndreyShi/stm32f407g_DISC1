@@ -175,46 +175,24 @@ int main(void)
   /* USER CODE BEGIN 2 */
   I2Cdev::init(&hi2c1);
   mpu.initialize();
-    // verify connection
-    Serial.println("Testing device connections...");
-    Serial.println(accelgyro.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
+  // verify connection
+  Serial.println("Testing device connections...");
 
-
-    Serial.println(F("Initializing DMP..."));
-    devStatus = mpu.dmpInitialize();
-    mpu.setXAccelOffset(-13321); 
-    mpu.setYAccelOffset(-26372); 
-    mpu.setZAccelOffset(1536); 
-    //mpu.setXGyroOffset(0);
-    //mpu.setYGyroOffset(0);
-    //mpu.setZGyroOffset(0);
-     mpu.setXGyroOffset(51);
-     mpu.setYGyroOffset(8);
-     mpu.setZGyroOffset(21);
-     mpu.setXAccelOffset(1150);
-     //mpu.setYAccelOffset(-50);
-     //mpu.setZAccelOffset(1060);
-  HAL_Delay(5000);
-    //mpu.CalibrateAccel(3);//old 6
-    //mpu.CalibrateGyro(3);//old 6
-    //mpu.PrintActiveOffsets();
-  // calibraton();
-   mpu.PrintActiveOffsets();
-   int16_t ax, ay, az;
-   int16_t gx, gy, gz;
-   int16_t offset = 0;
-   //printf("%d %d %d\n",mpu.getXAccelOffset(),mpu.getYAccelOffset(),mpu.getZAccelOffset());  
-       // load and configure the DMP
-   //while(1)
-   //{
-   //  accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
-   //  printf("%d %d %d %d %d %d\n",ax, ay, az, gx, gy, gz);
-   //  delay(100);
-   //}
-    // make sure it worked (returns 0 if so)
-    if (devStatus == 0) {
+  while(1){
+      bool tst = accelgyro.testConnection();
+      Serial.println(tst ? "MPU6050 connection successful" : "MPU6050 connection failed");
+      if(tst == false)
+          { HAL_Delay(5000);}
+      else
+          { break;}
+  }
+  
+  mpu.PrintActiveOffsets();
+  Serial.println(F("Initializing DMP..."));
+  devStatus = mpu.dmpInitialize();
+  if (devStatus == 0) {
         // Calibration Time: generate offsets and calibrate our MPU6050
-        mpu.CalibrateAccel(6);//old 6
+        //mpu.CalibrateAccel(6);//old 6
         //mpu.CalibrateGyro(6);//old 6
         mpu.PrintActiveOffsets();
         // turn on the DMP, now that it's ready
@@ -243,34 +221,41 @@ int main(void)
         Serial.print(devStatus);
         Serial.println(F(")"));
     }
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
+  while (1)   
+  {  
     delay(100);
-    if (!dmpReady) {continue;}
+    if (!dmpReady) {
+      printf("dmp is not ready!\n");
+      continue;
+    }
 
-    if (!mpuInterrupt) {continue;}
+    if (!mpuInterrupt) {
+      printf("mpuInterrupt is not ready!\n");
+      continue;
+    }
 
     mpuInterrupt = false;
     // read a packet from FIFO
     if (mpu.dmpGetCurrentFIFOPacket(fifoBuffer)) 
     //mpu.getFIFOBytes(fifoBuffer, packetSize);
     { // Get the Latest packet 
-           #ifdef OUTPUT_READABLE_QUATERNION
-            // display quaternion values in easy matrix form: w x y z
+        #ifdef OUTPUT_READABLE_YAWPITCHROLL
+            // display Euler angles in degrees
             mpu.dmpGetQuaternion(&q, fifoBuffer);
-            Serial.print("quat\t");
-            Serial.print(q.w);
+            mpu.dmpGetGravity(&gravity, &q);
+            mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
+            //printf("%2ld:%2ld:%3ld  ", timer1m,timer1s,timer1ms);
+            Serial.print("ypr\t");
+            Serial.print(ypr[0] * 180/M_PI);
             Serial.print("\t");
-            Serial.print(q.x);
+            Serial.print(ypr[1] * 180/M_PI);
             Serial.print("\t");
-            Serial.print(q.y);
-            Serial.print("\t");
-            Serial.print(q.z);
-            Serial.println();
+            Serial.println(ypr[2] * 180/M_PI,1);
         #endif
 
         #ifdef OUTPUT_READABLE_EULER
@@ -282,68 +267,36 @@ int main(void)
             Serial.print("\t");
             Serial.print(euler[1] * 180/M_PI);
             Serial.print("\t");
-            Serial.println(euler[2] * 180/M_PI);
-        #endif
-
-        #ifdef OUTPUT_READABLE_YAWPITCHROLL
-            // display Euler angles in degrees
-            mpu.dmpGetQuaternion(&q, fifoBuffer);
-            mpu.dmpGetGravity(&gravity, &q);
-            mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
-            Serial.print("ypr\t");
-            Serial.print(ypr[0] * 180/M_PI);
-            Serial.print("\t");
-            Serial.print(ypr[1] * 180/M_PI);
-            Serial.print("\t");
-            Serial.println(ypr[2] * 180/M_PI,1);
-        #endif
-
-        #ifdef OUTPUT_READABLE_REALACCEL
-            // display real acceleration, adjusted to remove gravity
-            mpu.dmpGetQuaternion(&q, fifoBuffer);
-            mpu.dmpGetAccel(&aa, fifoBuffer);
-            mpu.dmpGetGravity(&gravity, &q);
-            mpu.dmpGetLinearAccel(&aaReal, &aa, &gravity);
-            Serial.print("areal\t");
-            Serial.print(aaReal.x);
-            Serial.print("\t");
-            Serial.print(aaReal.y);
-            Serial.print("\t");
-            Serial.print(aaReal.z);
+            Serial.print(euler[2] * 180/M_PI);
             Serial.println();
         #endif
-
-        #ifdef OUTPUT_READABLE_WORLDACCEL
-            // display initial world-frame acceleration, adjusted to remove gravity
-            // and rotated based on known orientation from quaternion
-            mpu.dmpGetQuaternion(&q, fifoBuffer);
-            mpu.dmpGetAccel(&aa, fifoBuffer);
-            mpu.dmpGetGravity(&gravity, &q);
-            mpu.dmpGetLinearAccel(&aaReal, &aa, &gravity);
-            mpu.dmpGetLinearAccelInWorld(&aaWorld, &aaReal, &q);
-            Serial.print("aworld\t");
-            Serial.print(aaWorld.x);
-            Serial.print("\t");
-            Serial.print(aaWorld.y);
-            Serial.print("\t");
-            Serial.println(aaWorld.z);
-        #endif
-    
-        #ifdef OUTPUT_TEAPOT
-            // display quaternion values in InvenSense Teapot demo format:
-            teapotPacket[2] = fifoBuffer[0];
-            teapotPacket[3] = fifoBuffer[1];
-            teapotPacket[4] = fifoBuffer[4];
-            teapotPacket[5] = fifoBuffer[5];
-            teapotPacket[6] = fifoBuffer[8];
-            teapotPacket[7] = fifoBuffer[9];
-            teapotPacket[8] = fifoBuffer[12];
-            teapotPacket[9] = fifoBuffer[13];
-            Serial.write(teapotPacket, 14);
-            teapotPacket[11]++; // packetCount, loops at 0xFF on purpose
-        #endif
-
     }
+    else
+        { printf("mpu.dmpGetCurrentFIFOPacket false\n");}
+     //accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+     //printf("%d %d %d %d %d %d\n",ax, ay, az, gx, gy, gz);
+     //delay(100);
+    //printf("Display Status: %d %lu\n",HAL_ADC_PollForConversion(&hadc1, 1000),hadc1.Instance->DR);
+    //printf("TMR: %lu\n",micros());
+   // __asm("nop");
+   // HAL_Delay(30);
+   // while(buf_itera < 500)
+    //{
+    //  if(HAL_ADC_PollForConversion(&hadc1, 1000) == HAL_OK)
+    //      {buf[buf_itera++] = hadc1.Instance->DR;}
+    //  else
+    //      {break;}
+    //}
+    //HAL_ADC_Start(&hadc1);
+    // __HAL_ADC_CLEAR_FLAG(&hadc1, ADC_FLAG_EOC | ADC_FLAG_OVR);
+    //hadc1.Instance->CR2 |= (uint32_t)ADC_CR2_SWSTART;
+    //printf("Display Status: %lu\r\n",ReadDisplayStatus());
+    //printf("DisplayPowerMode: %u\r\n",ReadDisplayPowerMode());
+    //printf("display on");
+    //ReadDisplayId();
+    //ReadDisplayPowerMode();
+    //ReadDisplayPixelFormat();
+    //ReadDisplayStatus();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
