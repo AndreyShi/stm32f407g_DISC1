@@ -192,7 +192,7 @@ int main(void)
        else
            { break;}
    }
-
+#ifdef MAG
   mag.initialize();
   while(1){
       bool tst = mag.testConnection();
@@ -202,7 +202,7 @@ int main(void)
       else
           { break;}
   }
-  
+#endif  
   mpu.PrintActiveOffsets();
   Serial.println(F("Initializing DMP..."));
   devStatus = mpu.dmpInitialize();
@@ -244,6 +244,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)   
   {  
+    #ifdef MAG
     // read raw heading measurements from device
     mag.getHeading(&mx, &my, &mz);
 
@@ -259,16 +260,15 @@ int main(void)
       heading += 2 * M_PI;
     Serial.print("heading:\t");
     Serial.println(heading * 180/M_PI);
-   
+   #endif
     delay(100);
-    continue;
 
     if (!dmpReady) {
       printf("dmp is not ready!\n");
       continue;
     }
 
-    if (!mpuInterrupt) {
+   if (!mpuInterrupt) {
       printf("mpuInterrupt is not ready!\n");
       continue;
     }

@@ -22,8 +22,8 @@
   "targets": {
     "Debug": {
       "excludeList": [
-        "Src/MPU6050_6Axis_MotionApps612.cpp",
-        "Src/MPU6050_9Axis_MotionApps41.cpp"
+        "Src/MPU6050_9Axis_MotionApps41.cpp",
+        "Src/MPU6050_6Axis_MotionApps612.cpp"
       ],
       "toolchain": "GCC",
       "compileConfig": {
