@@ -140,7 +140,8 @@ volatile bool mpuInterrupt = false;     // indicates whether MPU interrupt pin h
 void dmpDataReady() {
     mpuInterrupt = true;
 }
-int16_t mx, my, mz;
+int16_t mx, my, mz,ax,ay,az;
+    int16_t gxyz[3];//, gy, gz;
 /* USER CODE END 0 */
 
 /**
@@ -192,33 +193,20 @@ int main(void)
        else
            { break;}
    }
-#ifdef MAG
-  mag.initialize();
-  while(1){
-      bool tst = mag.testConnection();
-      Serial.println(tst ? "HMC5883L connection successful" : "HMC5883L connection failed");
-      if(tst == false)
-          { HAL_Delay(5000);}
-      else
-          { break;}
-  }
-#endif  
   mpu.PrintActiveOffsets();
   Serial.println(F("Initializing DMP..."));
   devStatus = mpu.dmpInitialize();
+  //mpu.setXAccelOffset(10);
+  //mpu.setYAccelOffset(1015);
+  //mpu.setZAccelOffset(1166);
+  mpu.PrintActiveOffsets();
   if (devStatus == 0) {
-        // Calibration Time: generate offsets and calibrate our MPU6050
-        //mpu.CalibrateAccel(6);//old 6
-        //mpu.CalibrateGyro(6);//old 6
+        mpu.CalibrateAccel(6);//old 6
+        mpu.CalibrateGyro(6);//old 6
         mpu.PrintActiveOffsets();
         // turn on the DMP, now that it's ready
         Serial.println(F("Enabling DMP..."));
         mpu.setDMPEnabled(true);
-
-        // enable Arduino interrupt detection
-        Serial.print(F("Enabling interrupt detection (Arduino external interrupt "));
-        //Serial.print(digitalPinToInterrupt(INTERRUPT_PIN));// we set it on hal drivers
-        Serial.println(F(")..."));
         //attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), dmpDataReady, RISING);// we set it on hal drivers
         mpuIntStatus = mpu.getIntStatus();
 
@@ -244,93 +232,72 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)   
   {  
-    #ifdef MAG
-    // read raw heading measurements from device
-    mag.getHeading(&mx, &my, &mz);
+        mpu.resetFIFO();
+        HAL_Delay(100);
 
-    // display tab-separated gyro x/y/z values
-    Serial.print("mag:\t");
-    Serial.print(mx); Serial.print("\t");
-    Serial.print(my); Serial.print("\t");
-    Serial.print(mz); Serial.print("\t");
-    
-// To calculate heading in degrees. 0 degree indicates North
-    float heading = atan2(my, mx);
-    if(heading < 0)
-      heading += 2 * M_PI;
-    Serial.print("heading:\t");
-    Serial.println(heading * 180/M_PI);
-   #endif
-    delay(100);
-
-    if (!dmpReady) {
-      printf("dmp is not ready!\n");
-      continue;
-    }
-
-   if (!mpuInterrupt) {
-      printf("mpuInterrupt is not ready!\n");
-      continue;
-    }
-
-    mpuInterrupt = false;
-    // read a packet from FIFO
-    if (mpu.dmpGetCurrentFIFOPacket(fifoBuffer)) 
-    //mpu.getFIFOBytes(fifoBuffer, packetSize);
-    { // Get the Latest packet 
-        #ifdef OUTPUT_READABLE_YAWPITCHROLL
-            // display Euler angles in degrees
-            mpu.dmpGetQuaternion(&q, fifoBuffer);
-            mpu.dmpGetGravity(&gravity, &q);
-            mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
-            //printf("%2ld:%2ld:%3ld  ", timer1m,timer1s,timer1ms);
-            Serial.print("ypr\t");
-            Serial.print(ypr[0] * 180/M_PI);
-            Serial.print("\t");
-            Serial.print(ypr[1] * 180/M_PI);
-            Serial.print("\t");
-            Serial.println(ypr[2] * 180/M_PI,1);
+        if (!dmpReady) {
+            printf("dmp is not ready!\n");
+            continue;
+        }
+        mpuIntStatus = mpu.getIntStatus();
+        fifoCount = mpu.getFIFOCount();
+        #ifndef BUILD_LIB
+        printf("Int: %d  Cnt:%d  ",mpuIntStatus, fifoCount);
         #endif
 
-        #ifdef OUTPUT_READABLE_EULER
-            // display Euler angles in degrees
-            mpu.dmpGetQuaternion(&q, fifoBuffer);
-            mpu.dmpGetEuler(euler, &q);
-            Serial.print("euler\t");
-            Serial.print(euler[0] * 180/M_PI);
-            Serial.print("\t");
-            Serial.print(euler[1] * 180/M_PI);
-            Serial.print("\t");
-            Serial.print(euler[2] * 180/M_PI);
-            Serial.println();
-        #endif
-    }
-    else
-        { printf("mpu.dmpGetCurrentFIFOPacket false\n");}
-     //accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
-     //printf("%d %d %d %d %d %d\n",ax, ay, az, gx, gy, gz);
-     //delay(100);
-    //printf("Display Status: %d %lu\n",HAL_ADC_PollForConversion(&hadc1, 1000),hadc1.Instance->DR);
-    //printf("TMR: %lu\n",micros());
-   // __asm("nop");
-   // HAL_Delay(30);
-   // while(buf_itera < 500)
-    //{
-    //  if(HAL_ADC_PollForConversion(&hadc1, 1000) == HAL_OK)
-    //      {buf[buf_itera++] = hadc1.Instance->DR;}
-    //  else
-    //      {break;}
-    //}
-    //HAL_ADC_Start(&hadc1);
-    // __HAL_ADC_CLEAR_FLAG(&hadc1, ADC_FLAG_EOC | ADC_FLAG_OVR);
-    //hadc1.Instance->CR2 |= (uint32_t)ADC_CR2_SWSTART;
-    //printf("Display Status: %lu\r\n",ReadDisplayStatus());
-    //printf("DisplayPowerMode: %u\r\n",ReadDisplayPowerMode());
-    //printf("display on");
-    //ReadDisplayId();
-    //ReadDisplayPowerMode();
-    //ReadDisplayPixelFormat();
-    //ReadDisplayStatus();
+        if ((mpuIntStatus & 0x10) || fifoCount == 1024) {
+          mpu.resetFIFO();
+          Serial.println(F("FIFO overflow!"));
+        } else if (mpuIntStatus & 0x02) {
+          if(fifoCount < packetSize || fifoCount % packetSize) 
+          {
+            printf("bad packet, reset FIFO...!\n");
+            continue;
+          }
+          if(mpu.getFIFOBytes(fifoBuffer, packetSize) == 0)
+          {
+            printf("read fifo problem..!\n");
+            continue;
+          }
+
+          fifoCount -= packetSize;
+          mpu.dmpGetQuaternion(&q, fifoBuffer);
+          mpu.dmpGetGravity(&gravity, &q);
+          mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
+          //printf("%2ld:%2ld:%3ld  ", timer1m,timer1s,timer1ms);
+          #ifndef BUILD_LIB
+          printf("ypr  %.3f %.3f %.3f", ypr[0] * 180/M_PI, ypr[1] * 180/M_PI, ypr[2] * 180/M_PI);
+          #endif
+
+          //AFS_SEL Full Scale Range LSB Sensitivity 0 ±2g 16384 LSB/g, 1 ±4g 8192 LSB/g, 2 ±8g 4096 LSB/g, 3 ±16g 2048 LSB/g
+          mpu.dmpGetAccel(&aa, fifoBuffer);//for linear
+          mpu.dmpGetLinearAccel(&aaReal, &aa, &gravity);//for linear
+          #ifndef BUILD_LIB          
+          printf("  acc %.3f %.3f %.3f  ",(float)aaReal.x/16384.0,(float)aaReal.y/16384.0,(float)aaReal.z/16384.0);// todo view LinearAccel on display  
+          #endif
+
+          //FS_SEL Full Scale Range LSB Sensitivity 0 ±250 °/s 131 LSB/°/s, 1 ±500 °/s65.5 LSB/°/s, 2 ±1000 °/s 32.8 LSB/°/s, 3 ±2000 °/s 16.4 LSB/°/s
+          mpu.dmpGetGyro(gxyz, fifoBuffer);//for uglova9 speed
+          #ifndef BUILD_LIB
+          printf("spd %.3f %.3f %.3f",(float)gxyz[0]/16.4,(float)gxyz[1]/16.4,(float)gxyz[2]/16.4);//todo view uglova9 speed on display  
+          printf("\n");
+          #endif
+
+        } else if (mpuIntStatus == 1 && fifoCount == 0) {
+            printf("resetting DMP...\n");
+            mpu.resetDMP();
+            mpu.setDMPEnabled(false);
+            delay(50);
+            mpu.setDMPEnabled(true);
+        } else
+              { ;}
+    #ifdef RAW
+     if(accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz) == -1)
+         { printf("mpu.getMotion6 false\n");}
+     else
+         { printf("   %d %d %d %d %d %d\n",ax, ay, az, gx, gy, gz);}
+     delay(100);
+    #endif   
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -606,8 +573,8 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(dmp_ready_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+  //HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
+  //HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */

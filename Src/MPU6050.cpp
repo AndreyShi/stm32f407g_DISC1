@@ -2738,12 +2738,14 @@ uint8_t MPU6050_Base::getFIFOByte() {
     I2Cdev::readByte(devAddr, MPU6050_RA_FIFO_R_W, buffer, I2Cdev::readTimeout, wireObj);
     return buffer[0];
 }
-void MPU6050_Base::getFIFOBytes(uint8_t *data, uint8_t length) {
+int MPU6050_Base::getFIFOBytes(uint8_t *data, uint8_t length) {
+    int res = 0;
     if(length > 0){
-        I2Cdev::readBytes(devAddr, MPU6050_RA_FIFO_R_W, length, data, I2Cdev::readTimeout, wireObj);
+        res = I2Cdev::readBytes(devAddr, MPU6050_RA_FIFO_R_W, length, data, I2Cdev::readTimeout, wireObj);
     } else {
     	*data = 0;
     }
+    return res;
 }
 
 /** Get timeout to get a packet from FIFO buffer.
@@ -3326,10 +3328,11 @@ void MPU6050_Base::PID(uint8_t ReadAddress, float kP,float kI, uint8_t Loops){
 	uint32_t eSum;
 	uint16_t gravity = 8192; // prevent uninitialized compiler warning
 	if (ReadAddress == MPU6050_RA_ACCEL_XOUT_H) gravity = 16384 >> getFullScaleAccelRange();
-    printf("readaddres: %d  saveaddres: %d  gravity: %d \n",ReadAddress, SaveAddress,gravity);
+    //printf("readaddres: %d  saveaddres: %d  gravity: %d \n",ReadAddress, SaveAddress,gravity);
 	Serial.write('>');
 	for (int i = 0; i < 3; i++) {
 		I2Cdev::readWords(devAddr, SaveAddress + (i * shift), 1, (uint16_t *)&Data, I2Cdev::readTimeout, wireObj); // reads 1 or more 16 bit integers (Word)
+        printf("SaveAddress:%d %d\n",SaveAddress + (i * shift),Data);
 		Reading = Data;
 		if(SaveAddress != MPU6050_RA_XG_OFFS_USRH){
 			BitZero[i] = Data & 1;										 // Capture Bit Zero to properly handle Accelerometer calibration
@@ -3338,6 +3341,8 @@ void MPU6050_Base::PID(uint8_t ReadAddress, float kP,float kI, uint8_t Loops){
 			ITerm[i] = Reading * 4;
 		}
 	}
+
+    printf("SaveAddress:%d BitZero,ITerm X: %d %.3f Y: %d %.3f Z: %d %.3f\n\n",SaveAddress,BitZero[0],ITerm[0],BitZero[1],ITerm[1],BitZero[2],ITerm[2]);
 	for (int L = 0; L < Loops; L++) {
 		eSample = 0;
 		for (int c = 0; c < 100; c++) {// 100 PI Calculations
@@ -3358,7 +3363,7 @@ void MPU6050_Base::PID(uint8_t ReadAddress, float kP,float kI, uint8_t Loops){
                 Data_test_bias[i] = Data;
 				I2Cdev::writeWords(devAddr, SaveAddress + (i * shift), 1, (uint16_t *)&Data, wireObj);
 			}
-
+            printf("ReadAddress:%d c:%d  X:%d->%d Y:%d->%d Z:%d->%d \n",ReadAddress, c,Data_test[0],Data_test_bias[0],Data_test[1],Data_test_bias[1],Data_test[2],Data_test_bias[2]);
 			if((c == 99) && eSum > 1000){						// Error is still to great to continue 
 				c = 0;
 				Serial.write('*');
