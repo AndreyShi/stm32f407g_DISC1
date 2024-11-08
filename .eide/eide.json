@@ -1,5 +1,5 @@
 {
-  "name": "mpu6050Cpp",
+  "name": "stm32f407g_DISC1",
   "type": "ARM",
   "dependenceList": [],
   "srcDirs": [
