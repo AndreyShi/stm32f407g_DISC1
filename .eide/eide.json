@@ -13,8 +13,8 @@
     "folders": []
   },
   "outDir": "build",
-  "deviceName": null,
-  "packDir": null,
+  "deviceName": "GD32F405VG",
+  "packDir": ".pack/GigaDevice/GD32F4xx_DFP.2.0.0",
   "miscInfo": {
     "uid": "9a2a691e4697c7b055d664ec93fddd28"
   },
@@ -26,7 +26,7 @@
       ],
       "toolchain": "GCC",
       "compileConfig": {
-        "cpuType": "Cortex-M3",
+        "cpuType": "Cortex-M4",
         "floatingPointHardware": "none",
         "scatterFilePath": "",
         "useCustomScatterFile": true,
@@ -86,8 +86,37 @@
         "defineList": [
           "DEBUG",
           "USE_HAL_DRIVER",
-          "STM32F407xx"
+          "STM32F407xx",
+          "GD32F405"
         ]
+      },
+      "builderOptions": {
+        "GCC": {
+          "version": 5,
+          "beforeBuildTasks": [],
+          "afterBuildTasks": [],
+          "global": {
+            "$float-abi-type": "softfp",
+            "output-debug-info": "enable"
+          },
+          "c/cpp-compiler": {
+            "language-c": "c11",
+            "language-cpp": "c++11",
+            "optimization": "level-debug",
+            "warnings": "all-warnings",
+            "one-elf-section-per-function": true,
+            "one-elf-section-per-data": true
+          },
+          "asm-compiler": {
+            "ASM_FLAGS": "-DDEBUG"
+          },
+          "linker": {
+            "output-format": "elf",
+            "remove-unused-input-sections": true,
+            "LD_FLAGS": "-TSTM32F407VGTX_FLASH.ld",
+            "$toolName": "auto"
+          }
+        }
       }
     },
     "Release": {
@@ -130,10 +159,40 @@
           "USE_HAL_DRIVER",
           "STM32F407xx"
         ],
-        "sourceDirList": [],
         "libList": []
+      },
+      "builderOptions": {
+        "GCC": {
+          "version": 5,
+          "beforeBuildTasks": [],
+          "afterBuildTasks": [],
+          "global": {
+            "$float-abi-type": "softfp",
+            "output-debug-info": "enable",
+            "misc-control": []
+          },
+          "c/cpp-compiler": {
+            "language-c": "c11",
+            "language-cpp": "c++11",
+            "optimization": "level-debug",
+            "warnings": "all-warnings",
+            "one-elf-section-per-function": true,
+            "one-elf-section-per-data": true,
+            "C_FLAGS": "",
+            "CXX_FLAGS": ""
+          },
+          "asm-compiler": {
+            "ASM_FLAGS": ""
+          },
+          "linker": {
+            "output-format": "elf",
+            "remove-unused-input-sections": true,
+            "LD_FLAGS": "",
+            "LIB_FLAGS": ""
+          }
+        }
       }
     }
   },
-  "version": "3.4"
+  "version": "3.5"
 }

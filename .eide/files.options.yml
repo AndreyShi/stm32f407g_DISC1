@@ -1,8 +1,10 @@
 ##########################################################################################
 #                        Append Compiler Options For Source Files
-#
+##########################################################################################
+
 # syntax:
-#   <your matcher expr>: <your compiler command>
+#   <your pattern>: <compiler options>
+# For get pattern syntax, please refer to: https://www.npmjs.com/package/micromatch
 #
 # examples:
 #   'main.cpp':           --cpp11 -Og ...
@@ -10,12 +12,9 @@
 #   'src/lib/**/*.cpp':   --cpp11 -Os ...
 #   '!Application/*.c':   -O0
 #   '**/*.c':             -O2 -gnu ...
-#
-# For more syntax, please refer to: https://www.npmjs.com/package/micromatch
-#
-##########################################################################################
 
-version: "1.0"
-files:
-    Src/main.c: -xc++ -std=c++11
-virtualPathFiles: null
+version: "2.0"
+options:
+    Debug:
+        files:
+            Src/main.c: -xc++ -std=c++11
