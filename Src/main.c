@@ -469,7 +469,14 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     //HAL_GPIO_WritePin(GPIOD, blue_Pin, GPIO_PIN_RESET);
     HAL_GPIO_TogglePin(GPIOD, blue_Pin);
 }
+/*
+TO DO: проверить работу символа новой строки:
 
+Символ новый строки в определенных случаях теряется гдето в недрах библиотеки, к примеру:
+printf("Hello\n");   - символ новый строки "\n" потеряется
+printf("Hello\n",1); - вот так не потеряется
+
+*/
 int __io_putchar(int ch)
 {
   HAL_UART_Transmit(&huart3, (uint8_t *)&ch, 1, 10);
