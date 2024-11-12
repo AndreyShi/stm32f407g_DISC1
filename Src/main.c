@@ -476,6 +476,9 @@ TO DO: проверить работу символа новой строки:
 printf("Hello\n");   - символ новый строки "\n" потеряется
 printf("Hello\n",1); - вот так не потеряется
 
+UPD: проверка выполнена
+при printf("Hello\n") вызывается _write с len 5 "Hello", а затем 
+сразу _write с len 1 "\n".
 */
 int __io_putchar(int ch)
 {
