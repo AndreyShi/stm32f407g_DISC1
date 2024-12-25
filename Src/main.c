@@ -87,7 +87,20 @@ static void MX_CRC_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+uint32_t Crc32(uint32_t Crc, uint32_t Data)
+{
+ uint8_t i;
 
+ Crc = Crc ^ Data;
+
+ for(i=0; i<32; i++)
+   if (Crc & 0x80000000)
+     Crc = (Crc << 1) ^ 0x04C11DB7; // Polynomial used in STM32
+   else
+     Crc = (Crc << 1);
+
+ return(Crc);
+}
 
 /* USER CODE END 0 */
 
@@ -130,7 +143,14 @@ int main(void)
   MX_TIM3_Init();
   MX_CRC_Init();
   /* USER CODE BEGIN 2 */
-
+  uint32_t pBuffer = 0x01020304;
+  uint32_t crc32 = HAL_CRC_Calculate(&hcrc,&pBuffer, 1);
+  uint32_t crc_polynom;
+  uint32_t crc_cal2 = 0;
+  crc32 = ~crc32;
+  crc_polynom = 0xFFFFFFFF;
+  crc_cal2 = Crc32(crc_polynom, pBuffer);
+  printf("crc32: %lx %lx\n",crc32,crc_cal2);
   /* USER CODE END 2 */
 
   /* Infinite loop */
