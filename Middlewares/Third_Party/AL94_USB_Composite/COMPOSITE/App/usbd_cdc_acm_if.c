@@ -422,8 +422,14 @@ static int8_t CDC_Receive(uint8_t cdc_ch, uint8_t *Buf, uint32_t *Len)
 {
   /* USER CODE BEGIN 6 */
   //HAL_UART_Transmit_DMA(CDC_CH_To_UART_Handle(cdc_ch), Buf, *Len);
+  extern char write_to_flash_cmd;
+  if(Buf[0] == 0x1f)
+  {
+    Buf[0] += 1;
+    write_to_flash_cmd = 1;
+  }
   CDC_Transmit(cdc_ch, Buf, *Len); // echo back on same channel
-
+  
   USBD_CDC_SetRxBuffer(cdc_ch, &hUsbDevice, &Buf[0]);
   USBD_CDC_ReceivePacket(cdc_ch, &hUsbDevice);
   return (USBD_OK);

@@ -27,11 +27,14 @@
  * the section contents can be deleted.
  */
 /* USER CODE BEGIN 0 */
+
 /* USER CODE END 0 */
 #endif
 
 /* USER CODE BEGIN DECL */
-
+#include <stdio.h>
+#include <stdint.h>
+extern uint8_t MSC_Storage[16384];
 /* Includes ------------------------------------------------------------------*/
 #include <string.h>
 #include "ff_gen_drv.h"
@@ -82,6 +85,7 @@ DSTATUS USER_initialize (
 {
   /* USER CODE BEGIN INIT */
     Stat = STA_NOINIT;
+    Stat &= ~STA_NOINIT;
     return Stat;
   /* USER CODE END INIT */
 }
@@ -117,6 +121,9 @@ DRESULT USER_read (
 )
 {
   /* USER CODE BEGIN READ */
+  //for(int i = 0; i < count;i++)
+  //{memcpy(&buff[i],&MSC_Storage[i],512);}
+  
     return RES_OK;
   /* USER CODE END READ */
 }
@@ -138,6 +145,12 @@ DRESULT USER_write (
 )
 {
   /* USER CODE BEGIN WRITE */
+  if(count == 1){
+    //memcpy(&MSC_Storage[sector * 512],buff,512);
+    printf("sector: %d\n",sector);
+  }else{
+    printf("error write MSC_Storage\n");
+  }
   /* USER CODE HERE */
     return RES_OK;
   /* USER CODE END WRITE */
@@ -160,6 +173,24 @@ DRESULT USER_ioctl (
 {
   /* USER CODE BEGIN IOCTL */
     DRESULT res = RES_ERROR;
+    switch (cmd)
+    {
+        case CTRL_SYNC:
+            res = RES_OK;
+            break;
+        case GET_SECTOR_COUNT:
+            *(DWORD*)buff = 16384;
+            res = RES_OK;
+            break;
+        case GET_SECTOR_SIZE:
+            *(DWORD*)buff = 512;
+            res= RES_OK;
+            break;
+        case GET_BLOCK_SIZE:
+            *(DWORD*)buff = 512;
+            res= RES_OK;
+            break;
+    }
     return res;
   /* USER CODE END IOCTL */
 }

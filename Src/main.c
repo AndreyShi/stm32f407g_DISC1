@@ -90,6 +90,8 @@ static void MX_USB_OTG_FS_PCD_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+char write_to_flash_cmd;
+extern uint8_t MSC_Storage[32768];
 uint32_t Crc32(uint32_t Crc, uint32_t Data)
 {
  uint8_t i;
@@ -145,9 +147,8 @@ int main(void)
   MX_TIM3_Init();
   MX_CRC_Init();
   MX_USB_OTG_FS_PCD_Init();
-  MX_FATFS_Init();
+  //MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
-  
   MX_USB_DEVICE_Init();
   uint32_t pBuffer = 0x01020304;
   uint32_t crc32 = HAL_CRC_Calculate(&hcrc,&pBuffer, 1);
@@ -169,6 +170,30 @@ int main(void)
     if(tmp != htim3.Instance->CNT){
         printf("%d dir:%d\n",htim3.Instance->CNT,htim3.Instance->CR1 & 0x10);
         tmp = htim3.Instance->CNT;
+    }
+    if(write_to_flash_cmd == 1){
+      __disable_irq();
+			HAL_FLASH_Unlock();
+      FLASH_EraseInitTypeDef erase_cmd;
+      uint32_t err;
+      const char * const baseaddr = (const char *const)(uintptr_t)0x08012000;
+			//erase_cmd.TypeErase = FLASH_TYPEERASE_SECTORS;
+			//erase_cmd.Sector = (uint32_t)baseaddr;
+			//erase_cmd.NbSectors = 16; //2048 bytes
+			//HAL_FLASHEx_Erase(&erase_cmd, &err);
+			//HAL_FLASH_Lock();
+			//__enable_irq();
+ 			//__disable_irq();
+			HAL_FLASH_Unlock();
+			for(uint16_t i=0; i<32768/2; ++i)
+			{
+          uint16_t data = MSC_Storage[2*i];
+          data |= MSC_Storage[2*i + 1] << 8;
+          HAL_FLASH_Program(FLASH_TYPEPROGRAM_HALFWORD,(uint32_t)baseaddr + 2*i,data);
+			}
+			HAL_FLASH_Lock();
+			__enable_irq();
+      write_to_flash_cmd = 0;
     }
     /* USER CODE END WHILE */
 

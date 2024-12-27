@@ -21,7 +21,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_msc_if.h"
-
+#include "fat.h"
 /* USER CODE BEGIN INCLUDE */
 
 /* USER CODE END INCLUDE */
@@ -32,7 +32,7 @@
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
-uint8_t MSC_Storage[32*1024];
+
 /* USER CODE END PV */
 
 /** @addtogroup STM32_USB_OTG_DEVICE_LIBRARY
@@ -64,11 +64,11 @@ uint8_t MSC_Storage[32*1024];
   */
 
 #define STORAGE_LUN_NBR                  1
-#define STORAGE_BLK_NBR                  32*1024/512
+#define STORAGE_BLK_NBR                  64
 #define STORAGE_BLK_SIZ                  512
 
 /* USER CODE BEGIN PRIVATE_DEFINES */
-
+//uint8_t MSC_Storage[STORAGE_BLK_NBR*STORAGE_BLK_SIZ];
 /* USER CODE END PRIVATE_DEFINES */
 
 /**
@@ -233,7 +233,7 @@ int8_t STORAGE_Read(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_l
 
   uint32_t bytecount = blk_len*STORAGE_BLK_SIZ;
   uint32_t mem_address = blk_addr*STORAGE_BLK_SIZ;
-
+  //printf("blk_addr %d blk_len %d\n",blk_addr,blk_len);
   for(uint32_t i=0; i<bytecount; i++)
       {
 	  buf[i] = MSC_Storage[mem_address+i];
@@ -254,7 +254,7 @@ int8_t STORAGE_Write(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_
 
    uint32_t bytecount = blk_len*STORAGE_BLK_SIZ;
    uint32_t mem_address = blk_addr*STORAGE_BLK_SIZ;
-
+printf("blk_addr %d blk_len %d\n",blk_addr,blk_len);
     for(uint32_t i=0; i<bytecount; i++)
     {
 	MSC_Storage[mem_address+i] = buf[i];
