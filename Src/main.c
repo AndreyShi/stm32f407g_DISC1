@@ -147,7 +147,7 @@ int main(void)
   uint32_t crc32 = HAL_CRC_Calculate(&hcrc,&pBuffer, 1);
   uint32_t crc_polynom;
   uint32_t crc_cal2 = 0;
-  crc32 = ~crc32;
+  //crc32 = ~crc32;
   crc_polynom = 0xFFFFFFFF;
   crc_cal2 = Crc32(crc_polynom, pBuffer);
   printf("crc32: %lx %lx\n",crc32,crc_cal2);

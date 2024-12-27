@@ -7,7 +7,8 @@
     "Src",
     "Drivers",
     "Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src",
-    "Middlewares/ST/STM32_USB_Device_Library/Core/Src"
+    "Middlewares/ST/STM32_USB_Device_Library/Core/Src",
+    "Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Src"
   ],
   "virtualFolder": {
     "name": "<virtual_root>",
@@ -84,7 +85,8 @@
           "Drivers/CMSIS/Device/ST/STM32F4xx/Include",
           "Drivers/CMSIS/Include",
           "Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc",
-          "Middlewares/ST/STM32_USB_Device_Library/Core/Inc"
+          "Middlewares/ST/STM32_USB_Device_Library/Core/Inc",
+          "Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Inc"
         ],
         "libList": [],
         "defineList": [
