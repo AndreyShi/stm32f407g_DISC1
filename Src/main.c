@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "fatfs.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -144,7 +145,9 @@ int main(void)
   MX_TIM3_Init();
   MX_CRC_Init();
   MX_USB_OTG_FS_PCD_Init();
+  MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
+  
   MX_USB_DEVICE_Init();
   uint32_t pBuffer = 0x01020304;
   uint32_t crc32 = HAL_CRC_Calculate(&hcrc,&pBuffer, 1);

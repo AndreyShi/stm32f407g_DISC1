@@ -30,7 +30,6 @@
 #else
 #include "usb_otg.h"
 #endif
-
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -296,7 +295,7 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev)
 {
 #if (USBD_USE_HS == 1)
   /** HIGH SPEED USB */
-  hpcd_USB_OTG_PTR = &hpcd_USB_OTG_FS;
+  hpcd_USB_OTG_PTR = &hpcd_USB_OTG_HS;
 
   if (pdev->id == DEVICE_HS)
   {
