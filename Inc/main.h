@@ -31,7 +31,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+ extern void MX_USB_DEVICE_Init(void);
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

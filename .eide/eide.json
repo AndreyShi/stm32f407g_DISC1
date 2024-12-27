@@ -8,7 +8,13 @@
     "Drivers",
     "Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src",
     "Middlewares/ST/STM32_USB_Device_Library/Core/Src",
-    "Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Src"
+    "Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Src",
+    "Middlewares/Third_Party/AL94_USB_Composite/COMPOSITE/App",
+    "Middlewares/Third_Party/AL94_USB_Composite/COMPOSITE/Class/CDC_ACM/Src",
+    "Middlewares/Third_Party/AL94_USB_Composite/COMPOSITE/Class/COMPOSITE/Src",
+    "Middlewares/Third_Party/AL94_USB_Composite/COMPOSITE/Class/MSC/Src",
+    "Middlewares/Third_Party/AL94_USB_Composite/COMPOSITE/Core/Src",
+    "Middlewares/Third_Party/AL94_USB_Composite/COMPOSITE/Target"
   ],
   "virtualFolder": {
     "name": "<virtual_root>",
@@ -86,7 +92,13 @@
           "Drivers/CMSIS/Include",
           "Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc",
           "Middlewares/ST/STM32_USB_Device_Library/Core/Inc",
-          "Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Inc"
+          "Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Inc",
+          "Middlewares/Third_Party/AL94_USB_Composite/COMPOSITE/App",
+          "Middlewares/Third_Party/AL94_USB_Composite/COMPOSITE/Class/CDC_ACM/Inc",
+          "Middlewares/Third_Party/AL94_USB_Composite/COMPOSITE/Class/COMPOSITE/Inc",
+          "Middlewares/Third_Party/AL94_USB_Composite/COMPOSITE/Class/MSC/Inc",
+          "Middlewares/Third_Party/AL94_USB_Composite/COMPOSITE/Core/Inc",
+          "Middlewares/Third_Party/AL94_USB_Composite/COMPOSITE/Target"
         ],
         "libList": [],
         "defineList": [
