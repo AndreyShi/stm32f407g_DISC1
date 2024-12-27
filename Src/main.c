@@ -87,6 +87,7 @@ static void MX_CRC_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+//new branch
 uint32_t Crc32(uint32_t Crc, uint32_t Data)
 {
  uint8_t i;
