@@ -40,9 +40,9 @@ void MX_FATFS_Init(void)
         {
             if(f_mount(&USERFatFS, (TCHAR const*)USERPath, 0) == FR_OK)
             {
-              FRESULT d = f_mkfs((TCHAR const*)USERPath, FM_ANY, 0, rtext, sizeof(rtext));
-              printf(" f_mkfs FRESULT: %d\n",d);
-              d = f_open(&USERFile, "STM32.TXT", FA_CREATE_ALWAYS | FA_WRITE);
+              //FRESULT d = f_mkfs((TCHAR const*)USERPath, FM_ANY, 0, rtext, sizeof(rtext));
+              //printf(" f_mkfs FRESULT: %d\n",d);
+              FRESULT d = f_open(&USERFile, "STM32.TXT", FA_CREATE_ALWAYS | FA_WRITE);
               printf(" f_open FRESULT: %d\n",d);
                 if(d == FR_OK)
                 {

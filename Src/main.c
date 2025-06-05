@@ -92,11 +92,11 @@ static void MX_USB_OTG_FS_PCD_Init(void);
 /* USER CODE BEGIN 0 */
 char write_to_flash_cmd;
 extern uint8_t MSC_Storage[32768];
-uint32_t Crc32(uint32_t Crc, uint32_t Data)
+uint32_t Crc32(uint32_t Crc, uint32_t* Data)
 {
  uint8_t i;
 
- Crc = Crc ^ Data;
+ Crc = Crc ^ *Data;
 
  for(i=0; i<32; i++)
    if (Crc & 0x80000000)
@@ -106,7 +106,59 @@ uint32_t Crc32(uint32_t Crc, uint32_t Data)
 
  return(Crc);
 }
+static uint8_t *reorder4 (uint8_t *src, uint32_t len)
+{
+   static uint8_t dst[4];
+   uint8_t appendlen, idx;
 
+ 
+
+   len = (len % 4)+4;
+   appendlen = (len % 4) ? 4-(len % 4) : 0;
+   idx = 0;
+   while(appendlen--)
+   {
+      dst[idx] = 0xFF;
+      idx++;
+   }
+   while(len--)
+   {
+      dst[idx] = src[3-idx];
+      idx++;
+   }
+   return dst;
+}
+
+ 
+
+uint32_t crc32_formula_normal_STM32( size_t len,
+                                     void *data )
+{
+
+#define POLY 0x04C11DB7
+   uint8_t *buffer = (uint8_t*)data;
+   uint32_t crc = -1;
+   uint32_t portion;
+   uint8_t *reordered;
+ 
+   while( len )
+   {
+      portion = len < 4 ? len : 4;
+      reordered = reorder4(buffer, portion);
+      for (uint8_t i=0; i < 4; i++)
+      {
+         crc = crc ^ ((uint32_t)reordered[i] << 24);
+         for( int bit = 0; bit < 8; bit++ )
+         {
+            if( crc & (1L << 31)) crc = (crc << 1) ^ POLY;
+            else                  crc = (crc << 1);
+         }
+      }
+      buffer += portion;
+      len -= portion;
+   }
+   return crc;
+} 
 /* USER CODE END 0 */
 
 /**
@@ -146,54 +198,38 @@ int main(void)
   MX_TIM7_Init();
   MX_TIM3_Init();
   MX_CRC_Init();
-  MX_USB_OTG_FS_PCD_Init();
+  //MX_USB_OTG_FS_PCD_Init();
   //MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
-  MX_USB_DEVICE_Init();
-  uint32_t pBuffer = 0x01020304;
-  uint32_t crc32 = HAL_CRC_Calculate(&hcrc,&pBuffer, 1);
-  uint32_t crc_polynom;
-  uint32_t crc_cal2 = 0;
-  //crc32 = ~crc32;
-  crc_polynom = 0xFFFFFFFF;
-  crc_cal2 = Crc32(crc_polynom, pBuffer);
-  printf("crc32: %lx %lx\n",crc32,crc_cal2);
+  //MX_USB_DEVICE_Init();
+  uint32_t* p = (uint32_t*)0x08000000;
+  uint32_t pBuffer = 0x04030201;
+  uint8_t pBuffer_c[] = {0x00,0x00,0x02,0x20, 0xE5,0x66,0x00,0x08, 0x8E,0x09,0x6F,0x07};
+  volatile uint32_t crc32 = HAL_CRC_Calculate(&hcrc,p, 2);
+  //рассчет прошивки CRC32
+  crc32 = HAL_CRC_Calculate(&hcrc,(uint32_t*)&pBuffer_c[0], 2); //алгоритм STM, получаем сумму (8 байт данных)
+  //---помещаем рассчитанное crc32 в конец как little endian
+  pBuffer_c[8]  = crc32;
+  pBuffer_c[9]  = crc32 >> 8;
+  pBuffer_c[10] = crc32 >> 16;
+  pBuffer_c[11] = crc32 >> 24;
+  //---
+  int32_t crc_cal3 = 0;
+  //алгоритм программный crc прошивки + сам результат crc (8 байт данных + 4 байта crc),  получается в итоге crc ==0
+  crc_cal3 = crc32_formula_normal_STM32(12,&pBuffer_c[0]);      
+  printf("crc32: %lx %lx\n",crc32,crc_cal3);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   uint32_t tmp = 0;
-  printf("Hello World\n");
-  printf("Hello World\n");
+  printf("Hello World1\n");
+  printf("Hello World5\n");
   while (1)   
   {  
     if(tmp != htim3.Instance->CNT){
         printf("%d dir:%d\n",htim3.Instance->CNT,htim3.Instance->CR1 & 0x10);
         tmp = htim3.Instance->CNT;
-    }
-    if(write_to_flash_cmd == 1){
-      __disable_irq();
-			HAL_FLASH_Unlock();
-      FLASH_EraseInitTypeDef erase_cmd;
-      uint32_t err;
-      const char * const baseaddr = (const char *const)(uintptr_t)0x08012000;
-			//erase_cmd.TypeErase = FLASH_TYPEERASE_SECTORS;
-			//erase_cmd.Sector = (uint32_t)baseaddr;
-			//erase_cmd.NbSectors = 16; //2048 bytes
-			//HAL_FLASHEx_Erase(&erase_cmd, &err);
-			//HAL_FLASH_Lock();
-			//__enable_irq();
- 			//__disable_irq();
-			HAL_FLASH_Unlock();
-			for(uint16_t i=0; i<32768/2; ++i)
-			{
-          uint16_t data = MSC_Storage[2*i];
-          data |= MSC_Storage[2*i + 1] << 8;
-          HAL_FLASH_Program(FLASH_TYPEPROGRAM_HALFWORD,(uint32_t)baseaddr + 2*i,data);
-			}
-			HAL_FLASH_Lock();
-			__enable_irq();
-      write_to_flash_cmd = 0;
     }
     /* USER CODE END WHILE */
 
