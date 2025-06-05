@@ -36,6 +36,65 @@ extern "C" int __io_putchar(int ch);
 // specific I2C addresses may be passed as a parameter here
 // this device only supports one I2C address (0x1E)
 HMC5883L mag;
+/* Определения */
+#define SIGNAL_BUFFER_SIZE 256
+#define ADC_THRESHOLD 100
+#define DEBOUNCE_DELAY 50
+#define DOUBLE_CLICK_DELAY 300
+#define AMPLITUDE_STEP 0.1f
+#define FREQ_STEP_PERCENT 10
+
+/* Переменные */
+DAC_HandleTypeDef hdac;
+TIM_HandleTypeDef htim6;
+ADC_HandleTypeDef hadc1;
+
+/* Буферы */
+uint16_t dac_buffer[SIGNAL_BUFFER_SIZE];
+uint16_t adc_buffer[SIGNAL_BUFFER_SIZE];
+
+/* Перечисления */
+typedef enum {
+  WAVE_SQUARE,
+  WAVE_SINE,
+  WAVE_SAW,
+  WAVE_COUNT
+} WaveformType;
+
+typedef enum {
+  BTN_NONE,
+  BTN_UP,
+  BTN_DOWN,
+  BTN_BOTH
+} ButtonState;
+
+/* Структуры */
+typedef struct {
+  float frequency;
+  float amplitude;
+  WaveformType waveform;
+  uint32_t last_update;
+} SignalGenerator;
+
+typedef struct {
+  ButtonState state;
+  uint32_t last_press_time;
+  uint8_t click_count;
+} ButtonHandler;
+
+/* Глобальные переменные */
+SignalGenerator signal_gen = {
+  .frequency = 1000.0f,   // 1 kHz по умолчанию
+  .amplitude = 0.5f,      // 50% амплитуды
+  .waveform = WAVE_SINE,  // Синусоида по умолчанию
+  .last_update = 0
+};
+
+ButtonHandler btn_handler = {
+  .state = BTN_NONE,
+  .last_press_time = 0,
+  .click_count = 0
+};
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -82,7 +141,9 @@ static void MX_TIM7_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_CRC_Init(void);
 /* USER CODE BEGIN PFP */
-
+static void MX_DAC_Init(void);
+static void MX_TIM6_Init(void);
+static void MX_ADC1_Init(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -143,6 +204,10 @@ int main(void)
   MX_TIM7_Init();
   MX_TIM3_Init();
   MX_CRC_Init();
+
+  MX_DAC_Init();
+  MX_TIM6_Init();
+  MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
   uint32_t pBuffer = 0x01020304;
   uint32_t crc32 = HAL_CRC_Calculate(&hcrc,&pBuffer, 1);
@@ -567,6 +632,67 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+/* Инициализация аппаратных модулей */
+static void MX_DAC_Init(void) {
+  DAC_ChannelConfTypeDef sConfig = {0};
+  
+  hdac.Instance = DAC;
+  if (HAL_DAC_Init(&hdac) != HAL_OK) {
+    Error_Handler();
+  }
+  
+  sConfig.DAC_Trigger = DAC_TRIGGER_T6_TRGO;
+  sConfig.DAC_OutputBuffer = DAC_OUTPUTBUFFER_ENABLE;
+  if (HAL_DAC_ConfigChannel(&hdac, &sConfig, DAC_CHANNEL_1) != HAL_OK) {
+    Error_Handler();
+  }
+}
+
+static void MX_TIM6_Init(void) {
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+  
+  htim6.Instance = TIM6;
+  htim6.Init.Prescaler = 0;
+  htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim6.Init.Period = SystemCoreClock / (1000 * SIGNAL_BUFFER_SIZE) - 1; // 1 kHz начальная частота
+  htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  if (HAL_TIM_Base_Init(&htim6) != HAL_OK) {
+    Error_Handler();
+  }
+  
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim6, &sMasterConfig) != HAL_OK) {
+    Error_Handler();
+  }
+}
+
+static void MX_ADC1_Init(void) {
+  ADC_ChannelConfTypeDef sConfig = {0};
+  
+  hadc1.Instance = ADC1;
+  hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
+  hadc1.Init.Resolution = ADC_RESOLUTION_12B;
+  hadc1.Init.ScanConvMode = DISABLE;
+  hadc1.Init.ContinuousConvMode = ENABLE;
+  hadc1.Init.DiscontinuousConvMode = DISABLE;
+  hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+  hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+  hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+  hadc1.Init.NbrOfConversion = 1;
+  hadc1.Init.DMAContinuousRequests = ENABLE;
+  hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+  if (HAL_ADC_Init(&hadc1) != HAL_OK) {
+    Error_Handler();
+  }
+  
+  sConfig.Channel = ADC_CHANNEL_0;
+  sConfig.Rank = 1;
+  sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK) {
+    Error_Handler();
+  }
+}
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
     //HAL_GPIO_WritePin(GPIOD, LD6_Pin, GPIO_PIN_RESET);
