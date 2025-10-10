@@ -13,8 +13,9 @@
 #   '!Application/*.c':   -O0
 #   '**/*.c':             -O2 -gnu ...
 
-version: "2.0"
+version: "2.1"
 options:
     Debug:
-        files:
-            Src/main.c: -xc++ -std=c++11
+        files: {}
+    Release:
+        files: {}
