@@ -1,0 +1,214 @@
+version: "4.1"
+name: mpu6050Cpp
+type: ARM
+deviceName: GD32F405VG
+packDir: .pack/GigaDevice/GD32F4xx_DFP.2.0.0
+srcDirs:
+  - Startup
+  - Src
+  - Middlewares
+  - Drivers
+virtualFolder:
+  name: <virtual_root>
+  files: []
+  folders: []
+dependenceList: []
+outDir: build
+miscInfo:
+  uid: 9a2a691e4697c7b055d664ec93fddd28
+targets:
+  Debug:
+    cppPreprocessAttrs:
+      defineList:
+        - DEBUG
+        - USE_HAL_DRIVER
+        - STM32F407xx
+        - EXCLUDE_MPU6050
+      incList:
+        - Inc
+        - Drivers/STM32F4xx_HAL_Driver/Inc
+        - Drivers/STM32F4xx_HAL_Driver/Inc/Legacy
+        - Drivers/CMSIS/Device/ST/STM32F4xx/Include
+        - Drivers/CMSIS/Include
+        - Middlewares/Third_Party/LwIP/src/include
+        - Middlewares/Third_Party/LwIP/system
+        - Drivers/BSP/Components/lan8742
+        - Middlewares/Third_Party/LwIP/src/include/netif/ppp
+        - Middlewares/Third_Party/LwIP/src/include/lwip
+        - Middlewares/Third_Party/LwIP/src/include/lwip/apps
+        - Middlewares/Third_Party/LwIP/src/include/lwip/priv
+        - Middlewares/Third_Party/LwIP/src/include/lwip/prot
+        - Middlewares/Third_Party/LwIP/src/include/netif
+        - Middlewares/Third_Party/LwIP/src/include/compat/posix
+        - Middlewares/Third_Party/LwIP/src/include/compat/posix/arpa
+        - Middlewares/Third_Party/LwIP/src/include/compat/posix/net
+        - Middlewares/Third_Party/LwIP/src/include/compat/posix/sys
+        - Middlewares/Third_Party/LwIP/src/include/compat/stdc
+        - Middlewares/Third_Party/LwIP/system/arch
+      libList: []
+    excludeList:
+      - Src/MPU6050.cpp
+      - Src/MPU6050_6Axis_MotionApps20.cpp
+      - Src/MPU6050_6Axis_MotionApps612.cpp
+      - Src/MPU6050_9Axis_MotionApps41.cpp
+      - Src/IMU_Zero.cpp
+      - Src/I2Cdev.cpp
+      - Src/HMC5883L.cpp
+    toolchain: GCC
+    toolchainConfigMap:
+      GCC:
+        archExtensions: ""
+        cpuType: Cortex-M4
+        floatingPointHardware: single
+        options:
+          version: 5
+          afterBuildTasks: []
+          asm-compiler:
+            ASM_FLAGS: -DDEBUG
+          beforeBuildTasks: []
+          c/cpp-compiler:
+            CXX_FLAGS: ""
+            C_FLAGS: ""
+            language-c: c11
+            language-cpp: c++11
+            one-elf-section-per-data: true
+            one-elf-section-per-function: true
+            optimization: level-debug
+            warnings: all-warnings
+          global:
+            $float-abi-type: hard
+            misc-control: []
+            not-use-syscalls: true
+            output-debug-info: enable
+            use-newlib-nano: true
+          linker:
+            $outputTaskExcludes:
+              - .bin
+            LD_FLAGS: ""
+            LIB_FLAGS: ""
+            output-format: elf
+            remove-unused-input-sections: true
+        scatterFilePath: STM32F407VGTX_FLASH.ld
+        storageLayout:
+          RAM: []
+          ROM: []
+        useCustomScatterFile: true
+    uploadConfigMap:
+      JLink:
+        baseAddr: ""
+        bin: ""
+        cpuInfo:
+          cpuName: "null"
+          vendor: "null"
+        otherCmds: ""
+        proType: 1
+        speed: 8000
+      OpenOCD:
+        baseAddr: "0x08000000"
+        bin: ""
+        interface: stlink
+        target: stm32f4x
+      STLink:
+        address: "0x08000000"
+        bin: ""
+        elFile: None
+        optionBytes: .eide/debug.st.option.bytes.ini
+        otherCmds: ""
+        proType: SWD
+        resetMode: default
+        runAfterProgram: true
+        speed: 4000
+    uploader: OpenOCD
+  Release:
+    cppPreprocessAttrs:
+      defineList:
+        - USE_HAL_DRIVER
+        - STM32F407xx
+      incList:
+        - Inc
+        - Drivers/STM32F4xx_HAL_Driver/Inc
+        - Drivers/STM32F4xx_HAL_Driver/Inc/Legacy
+        - Drivers/CMSIS/Device/ST/STM32F4xx/Include
+        - Drivers/CMSIS/Include
+        - Middlewares/Third_Party/LwIP/src/include
+        - Middlewares/Third_Party/LwIP/system
+        - Drivers/BSP/Components/lan8742
+        - Middlewares/Third_Party/LwIP/src/include/netif/ppp
+        - Middlewares/Third_Party/LwIP/src/include/lwip
+        - Middlewares/Third_Party/LwIP/src/include/lwip/apps
+        - Middlewares/Third_Party/LwIP/src/include/lwip/priv
+        - Middlewares/Third_Party/LwIP/src/include/lwip/prot
+        - Middlewares/Third_Party/LwIP/src/include/netif
+        - Middlewares/Third_Party/LwIP/src/include/compat/posix
+        - Middlewares/Third_Party/LwIP/src/include/compat/posix/arpa
+        - Middlewares/Third_Party/LwIP/src/include/compat/posix/net
+        - Middlewares/Third_Party/LwIP/src/include/compat/posix/sys
+        - Middlewares/Third_Party/LwIP/src/include/compat/stdc
+        - Middlewares/Third_Party/LwIP/system/arch
+      libList: []
+    excludeList: []
+    toolchain: GCC
+    toolchainConfigMap:
+      GCC:
+        archExtensions: ""
+        cpuType: Cortex-M4
+        floatingPointHardware: single
+        options:
+          version: 5
+          afterBuildTasks: []
+          asm-compiler:
+            ASM_FLAGS: ""
+          beforeBuildTasks: []
+          c/cpp-compiler:
+            CXX_FLAGS: ""
+            C_FLAGS: ""
+            language-c: c11
+            language-cpp: c++11
+            one-elf-section-per-data: true
+            one-elf-section-per-function: true
+            optimization: level-debug
+            warnings: all-warnings
+          global:
+            $float-abi-type: hard
+            misc-control: []
+            not-use-syscalls: true
+            output-debug-info: enable
+            use-newlib-nano: true
+          linker:
+            $outputTaskExcludes:
+              - .bin
+            LD_FLAGS: ""
+            LIB_FLAGS: ""
+            output-format: elf
+            remove-unused-input-sections: true
+        scatterFilePath: STM32F407VGTX_FLASH.ld
+        storageLayout:
+          RAM: []
+          ROM: []
+        useCustomScatterFile: true
+    uploadConfigMap:
+      JLink:
+        baseAddr: ""
+        bin: ""
+        cpuInfo:
+          cpuName: "null"
+          vendor: "null"
+        otherCmds: ""
+        proType: 1
+        speed: 8000
+      OpenOCD:
+        baseAddr: "0x08000000"
+        bin: ""
+        interface: stlink
+        target: stm32f4x
+      STLink:
+        address: "0x08000000"
+        bin: ""
+        elFile: None
+        optionBytes: .eide/debug.st.option.bytes.ini
+        otherCmds: ""
+        proType: SWD
+        resetMode: default
+        runAfterProgram: true
+        speed: 4000
+    uploader: OpenOCD
