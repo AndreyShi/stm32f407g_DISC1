@@ -19,9 +19,14 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "lwip.h"
-#include <stdarg.h>
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <stdarg.h>
+//information from datasheet DS8626 Rev 10 for STM32F40xxx
+#define VREF_PLUS_CHARAC 3.3f
+#define VREFINT_CAL_ADDR 0x1FFF7A2A
+float get_stm_VDDA(ADC_HandleTypeDef *hadc);
 #ifndef EXCLUDE_MPU6050
 //compile main.c with g++ compilator! we need safe compatibility with STMCubeMx
 //#include "MPU6050_6Axis_MotionApps612.h"
@@ -56,6 +61,8 @@ HMC5883L mag;
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+ADC_HandleTypeDef hadc1;
+
 CRC_HandleTypeDef hcrc;
 
 I2S_HandleTypeDef hi2s3;
@@ -77,6 +84,7 @@ static void MX_TIM7_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_CRC_Init(void);
 static void MX_USART3_UART_Init(void);
+static void MX_ADC1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -137,6 +145,7 @@ int main(void)
   MX_CRC_Init();
   MX_USART3_UART_Init();
   MX_LWIP_Init();
+  MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
   uint32_t pBuffer = 0x01020304;
   uint32_t crc32 = HAL_CRC_Calculate(&hcrc,&pBuffer, 1);
@@ -145,21 +154,21 @@ int main(void)
   crc32 = ~crc32;
   crc_polynom = 0xFFFFFFFF;
   crc_cal2 = Crc32(crc_polynom, pBuffer);
-  printf("crc32: %lx %lx\n",crc32,crc_cal2);
+  //printf("crc32: %lx %lx\n",crc32,crc_cal2);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   uint32_t tmp = 0;
-  printf("Hello World\n");
-  printf("Hello World\n");
+  //printf("Hello World\n");
+  //printf("Hello World\n");
     // Запуск таймера для генерации сигнала
   while (1)   
   { 
     MX_LWIP_Process(); 
     HAL_Delay(100);
-    //print("Hello world\n");
     HAL_GPIO_TogglePin(GPIOD, LD4_Pin|LD3_Pin|LD5_Pin|LD6_Pin);
+    print("stm vdda: %.2f\n",get_stm_VDDA(&hadc1));
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -210,6 +219,58 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief ADC1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_ADC1_Init(void)
+{
+
+  /* USER CODE BEGIN ADC1_Init 0 */
+
+  /* USER CODE END ADC1_Init 0 */
+
+  ADC_ChannelConfTypeDef sConfig = {0};
+
+  /* USER CODE BEGIN ADC1_Init 1 */
+
+  /* USER CODE END ADC1_Init 1 */
+
+  /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
+  */
+  hadc1.Instance = ADC1;
+  hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
+  hadc1.Init.Resolution = ADC_RESOLUTION_12B;
+  hadc1.Init.ScanConvMode = DISABLE;
+  hadc1.Init.ContinuousConvMode = DISABLE;
+  hadc1.Init.DiscontinuousConvMode = DISABLE;
+  hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+  hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+  hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+  hadc1.Init.NbrOfConversion = 1;
+  hadc1.Init.DMAContinuousRequests = DISABLE;
+  hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+  if (HAL_ADC_Init(&hadc1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
+  */
+  sConfig.Channel = ADC_CHANNEL_VREFINT;
+  sConfig.Rank = 1;
+  sConfig.SamplingTime = ADC_SAMPLETIME_480CYCLES;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN ADC1_Init 2 */
+
+  /* USER CODE END ADC1_Init 2 */
+
 }
 
 /**
@@ -421,7 +482,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOD, LD4_Pin|LD3_Pin|LD5_Pin|LD6_Pin
-                          |Audio_RST_Pin, GPIO_PIN_SET);
+                          |Audio_RST_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : CS_I2C_SPI_Pin */
   GPIO_InitStruct.Pin = CS_I2C_SPI_Pin;
@@ -567,6 +628,22 @@ void print(const char *format, ...) {
   }
 }
 
+float get_stm_VDDA(ADC_HandleTypeDef *hadc){
+
+    int adc_data = 0;
+    float res = -1.0;
+
+    HAL_ADC_Start(hadc);
+    if(HAL_ADC_PollForConversion(hadc, 1000) == HAL_OK){
+        adc_data = (int)HAL_ADC_GetValue(hadc);
+
+        //VREFINT = (adc_data × VREF_PLUS_CHARAC) / 4095.0f 
+        //VDDA
+        res = (*((uint16_t*)VREFINT_CAL_ADDR) * VREF_PLUS_CHARAC) / adc_data;
+        //printf("ADC value: %d adc vol: %.2f\n",adc_data, res );
+    }
+    return res;
+}
 /* USER CODE END 4 */
 
 /**
